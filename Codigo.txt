@@ -1,11 +1,5 @@
-.data
-etiqueta:   .word 12
-
-etiqueta1:  .word 13
-
 .text
-    ldr r1, #122
-
-    add r1, r2 , #22
-    
-    mov r1, #2
+etiqueta:   mov 12
+etiqueta:   ldr r1, #0x102030
+.wfi
+etiqueta:   mov 13
