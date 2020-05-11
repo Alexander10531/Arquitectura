@@ -1,5 +1,4 @@
 .text
 etiqueta:   mov 12
-etiqueta:   ldr r1, #0x102030
-.wfi
-etiqueta:   mov 13
+mov r1, 13
+etiqueta: add r1, r2, #2

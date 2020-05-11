@@ -1,2 +1,3 @@
 Codigo Error = 1: Se definio dos vece .data
 Codigo Error = 2: Se definio dos vece .text
+Codigo Error = 3: instrucciones repetidas

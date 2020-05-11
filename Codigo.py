@@ -44,18 +44,15 @@ class Codigo:
         return self.registro["lineaText"]
 
     def mov(self,line):
-        return 1
+        print("mov")
     
     def add(self,line):
-        return "Aqui va su codigo :')"
+        print("add")
 
     def sub(self,line):
         return "Aqui va su codigo :')"
 
     def ldr(self,line):
-        return "Aqui va su codigo :')"
-
-    def mov(self,line):
         return "Aqui va su codigo :')"
 
     def leer_codigo(self,archivo,codigo):
@@ -105,7 +102,15 @@ class Codigo:
                 lineaText+= 1
 
     def comprobar_instruccion(self,line):
-        pass
+        
+        f = lambda x: x if x in self.codigo[line] else None
+        
+        lista = list(filter(None,list(map(f,self.instrucciones))))
+        if len(lista) == 1:
+            self.instrucciones[lista[0]](self.codigo[line])
+        else:
+            pass
+
 codigo = Codigo("Codigo.txt")
 codigo.exec_text(codigo.registro["lineaText"])
 
