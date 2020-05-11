@@ -105,8 +105,7 @@ class Codigo:
                 lineaText+= 1
 
     def comprobar_instruccion(self,line):
-       
-
+        pass
 codigo = Codigo("Codigo.txt")
 codigo.exec_text(codigo.registro["lineaText"])
 
