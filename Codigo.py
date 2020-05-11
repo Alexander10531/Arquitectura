@@ -4,9 +4,9 @@ class Codigo:
 
     def __init__(self,archivo):
         self.registro = {"lineaText": None, "lineaData": None, "error" : None, "descrError" : None,"r0":"valor","r1":"valor","r2":"valor","r3":"valor","r4": "valor","r5":"valor","r6":"valor","r7":"valor","r8":"valor","r9":"valor","r10":"valor","r11":"valor","r12":"valor","r13":"valor","r14":"valor","r15":"valor",} 
-        self.instrucciones = ["mov", "ldr","add","sub","neg","xor"]
-        self.memoria = {}
-        self.memoria = self.crear_memoria(self.memoria)
+        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"ldr":self.ldr}
+        self.ram = {}
+        self.ram = self.crear_memoria(self.ram)
         self.codigo = {}
         self.archivo = archivo
         self.error = None 
@@ -20,7 +20,7 @@ class Codigo:
         return self.instrucciones
     
     def getMemoria(self):
-        return self.memoria
+        return self.ram
     
     def getCodigo(self):
         return self.codigo
@@ -42,6 +42,21 @@ class Codigo:
     
     def getLineaData(self):
         return self.registro["lineaText"]
+
+    def mov(self,line):
+        return 1
+    
+    def add(self,line):
+        return "Aqui va su codigo :')"
+
+    def sub(self,line):
+        return "Aqui va su codigo :')"
+
+    def ldr(self,line):
+        return "Aqui va su codigo :')"
+
+    def mov(self,line):
+        return "Aqui va su codigo :')"
 
     def leer_codigo(self,archivo,codigo):
         
@@ -88,7 +103,10 @@ class Codigo:
                 elif lineaText > max(codigo.codigo):
                     break
                 lineaText+= 1
-    
+
     def comprobar_instruccion(self,line):
-        print(self.codigo[line])
+       
+
+codigo = Codigo("Codigo.txt")
+codigo.exec_text(codigo.registro["lineaText"])
 
