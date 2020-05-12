@@ -1,3 +1,4 @@
 Codigo Error = 1: Se definio dos vece .data
 Codigo Error = 2: Se definio dos vece .text
 Codigo Error = 3: instrucciones repetidas
+Codigo Error = 4: Error de sintaxis

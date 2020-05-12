@@ -44,7 +44,21 @@ class Codigo:
         return self.registro["lineaText"]
 
     def mov(self,line):
-        print("mov")
+        #evalúa la sintaxis de la función mov con un registro y una constante
+        lineaConst=re.search(r"mov r([0-9]{1}|1[0-5]{1}), #([0-9]{1}|1[0-9]{1,2}|[2-9][0-9]|2[0-5]{2})$", line)
+        #evalúa la sintaxis de la función mov con dos registros
+        lineaRegis=re.search(r"mov r([0-9]{1}|1[0-5]{1}), r([0-9]{1}|1[0-5]{1})$", line)
+        if lineaConst != None:
+            registro=re.search(r"r([0-9]{1,2})", line).group() #para extraer el registro usado en la función
+            constante=re.search(r"#([0-9]{1,3})", line).group().split("#") #para extraer la constante
+            self.registro[registro]=hex(int(constante[1]))
+        elif lineaRegis != None:
+            registro1=re.search(r"r([0-9]{1,2})", line).group() #para extraer el primer registro usado en la función
+            registro2=re.search(r", r([0-9]{1,3})", line).group().split(" ") #para extraer el segundo registro usado en la función
+            self.registro[registro1]=self.registro[registro2[1]]
+        else:
+            print("Error de sintaxis en: ", line)
+            exit() #se sale del programa si encuentra un error de sintaxis
     
     def add(self,line):
         print("add")
@@ -113,4 +127,4 @@ class Codigo:
 
 codigo = Codigo("Codigo.txt")
 codigo.exec_text(codigo.registro["lineaText"])
-
+print(codigo.registro)
