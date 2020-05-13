@@ -1,3 +1,4 @@
+#Expresion Regular: ^([\w\d]+:)?\.word\s+(0x[0-9A-Fa-z]+|0b[0-1]+|\d+)$
 import re
 
 class Codigo:
@@ -6,7 +7,7 @@ class Codigo:
         # Registros, tambien se encuentran los valores lineaText, lineaData, error, descrError que se usan para el control del programa
         self.registro = {"lineaText": None, "lineaData": None, "error" : None, "descrError" : None,"r0":"valor","r1":"valor","r2":"valor","r3":"valor","r4": "valor","r5":"valor","r6":"valor","r7":"valor","r8":"valor","r9":"valor","r10":"valor","r11":"valor","r12":"valor","r13":"valor","r14":"valor","r15":"valor",} 
         # Diccionario de instrucciones en las que se encuentran los nombres de las instrucciones y estan asociados a las funciones
-        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"ldr":self.ldr,".word":self.word,"wfi":self.wfi}
+        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strb,"ldr":self.ldr,".word":self.word,"wfi":self.wfi}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
         self.etiquetas = {}
@@ -82,8 +83,20 @@ class Codigo:
     def ldr(self,line):
         return "Aqui va su codigo :')"
 
-    def word(self,line):
+    def strb(self,line):
         pass
+
+    def obtener_direccion(self,valor = None):
+        return hex(537329664 + list(self.ram.values()).index("0x00")) if valor == None else hex(537329664 + list(self.ram.values()).index(valor))
+
+    def word(self,line):
+        patron = re.findall(":",line)
+        if len(patron) == 1:
+            print("Esta con etiqueta")
+        elif len(patron) == 0:
+            print("Esta sin etiqueta") 
+        else:
+            print("Estas pendejo")
 
     def wfi(self):
         pass
@@ -131,7 +144,7 @@ class Codigo:
 
     def crear_memoria(self,memoria): 
         # Creacion de un diccionario que asocia la direccion de memoria con su valor por defecto, 0x00000000
-        return {str(hex(i)).upper() : "0x00000000" for i in range(537329664,537329700)}
+        return {str(hex(i)).upper() : "0x00" for i in range(537329664,537329700)}
 
     def exec_text(self,lineaText):
         # Esta liea evalua si existe una etiqueta llemada .text
@@ -174,4 +187,7 @@ codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 print("-------------------------------------")
 codigo.exec_text(codigo.registro["lineaText"])
-#print(codigo.registro)
+print(codigo.ram)
+print(codigo.obtener_direccion())
+
+k = 32
