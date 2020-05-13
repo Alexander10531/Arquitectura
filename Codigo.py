@@ -61,10 +61,10 @@ class Codigo:
             self.registro[registro]='0x{0:0{1}X}'.format(int(constante[1]),8)
         elif lineaConstBin != None:
             constante=re.search(r"#0b([0-1]{1,8})", line).group().split("0b")
-            self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),2),8) #hex(int(str(constante[1]),2)).upper()
+            self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),2),8) 
         elif lineaConstHex != None:
             constante=re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})", line).group().split("0x")
-            self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8) #constante.upper()
+            self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8) 
         elif lineaRegis != None: 
             registro2=re.search(r", r([0-9]{1,2})", line).group().split(" ") #para extraer el segundo registro usado en la función
             self.registro[registro]=self.registro[registro2[1]]
