@@ -2,6 +2,6 @@
 mov r0, #0xff
 mov r1, #13
 mov r2, #0b00110011
-mov r3, #85
+mov r3, r2
 etiqueta: add r1, r2, #2
 
