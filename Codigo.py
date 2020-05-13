@@ -48,21 +48,29 @@ class Codigo:
         return self.registro["lineaData"]
 
     def mov(self,line):
-        #evalúa la sintaxis de la función mov con un registro y una constante
-        lineaConst=re.search(r"mov r([0-9]{1}|1[0-5]{1}), #([0-9]{1}|1[0-9]{1,2}|[2-9][0-9]|2[0-5]{2})$", line)
+         #evalúa la sintaxis de la función mov con un registro y una constante
+        lineaConstDec=re.search(r"mov r([0-9]{1}|1[0-5]{1}), #(([0-9]{1}|[1-9][0-9]|2[0-5]{2}))$", line)
+        lineaConstBin=re.search(r"mov r([0-9]{1}|1[0-5]{1}), #0b([0-1]{1,8})$", line)
+        lineaConstHex=re.search(r"mov r([0-9]{1}|1[0-5]{1}), #(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})$", line)
         #evalúa la sintaxis de la función mov con dos registros
-        lineaRegis=re.search(r"mov r([0-9]{1}|1[0-5]{1}), r([0-9]{1}|1[0-5]{1})$", line)
-        if lineaConst != None:
-            registro=re.search(r"r([0-9]{1,2})", line).group() #para extraer el registro usado en la función
-            constante=re.search(r"#([0-9]{1,3})", line).group().split("#") #para extraer la constante
+        lineaRegis=re.search(r"mov r([0-9]{1})$", line)
+
+        registro=re.search(r"r([0-9]{1,2})", line).group() #para extraer el registro usado en la función
+        if lineaConstDec != None: 
+            constante=re.search(r"#([0-9]{1,2})", line).group().split("#") #para extraer la constante escrita en decimal
             self.registro[registro]=hex(int(constante[1])).upper()
-        elif lineaRegis != None:
-            registro1=re.search(r"r([0-9]{1,2})", line).group() #para extraer el primer registro usado en la función
-            registro2=re.search(r", r([0-9]{1,3})", line).group().split(" ") #para extraer el segundo registro usado en la función
-            self.registro[registro1]=self.registro[registro2[1]].upper()
+        elif lineaConstBin != None:
+            constante=re.search(r"#0b([0-1]{1,8})", line).group().split("0b") #para extraer la constante escrita en binario
+            self.registro[registro]=hex(int(str(constante[1]),2)).upper()
+        elif lineaConstHex != None:
+            constante=re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})", line).group() #para extraer la constante escrita en hexadecimal
+            self.registro[registro]=constante.upper()
+        elif lineaRegis != None: 
+            registro2=re.search(r", r([0-9]{1,2})", line).group().split(" ") #para extraer el segundo registro usado en la función
+            self.registro[registro]=self.registro[registro2[1]].upper()
         else:
             print("Error de sintaxis en: ", line)
-            exit() #se sale del programa si encuentra un error de sintaxis
+            exit() #se sale del programa si encuentra un error en la sintaxis
     
     def add(self,line):
         print("add")
@@ -153,3 +161,4 @@ class Codigo:
 
 codigo = Codigo("Codigo.txt")
 codigo.exec_text(codigo.registro["lineaText"])
+#print(codigo.registro)
