@@ -1,7 +1,14 @@
 .text
-mov r0, #12
-mov r4, #12
+Etiqueta1:mov r0, #12
+Etiqueta0: mov r4, #12
+
 mov r1, #13
 mov r2, r0
+
 mov r3, #85
 
+.data
+Etiqueta: .word 0x10203040
+
+.word r1, #12
+.word r4, #13

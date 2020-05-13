@@ -9,6 +9,7 @@ class Codigo:
         self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"ldr":self.ldr,".word":self.word,"wfi":self.wfi}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
+        self.etiquetas = {}
         self.ram = {}
         self.ram = self.crear_memoria(self.ram)
         # Lectura de linea por linea del texto en cuestion
@@ -59,7 +60,7 @@ class Codigo:
         elif lineaRegis != None:
             registro1=re.search(r"r([0-9]{1,2})", line).group() #para extraer el primer registro usado en la función
             registro2=re.search(r", r([0-9]{1,3})", line).group().split(" ") #para extraer el segundo registro usado en la función
-            self.registro[registro1]=self.registro[registro2[1]].upper()
+            self.registro[registro1]=self.registro[registro2[1]].upper()    
         else:
             print("Error de sintaxis en: ", line)
             exit() #se sale del programa si encuentra un error de sintaxis
@@ -74,7 +75,7 @@ class Codigo:
         return "Aqui va su codigo :')"
 
     def word(self,line):
-        print("Simon, vamos a reservas memoria")
+        if len()
 
     def wfi(self):
         pass
@@ -125,17 +126,17 @@ class Codigo:
         return {str(hex(i)).upper() : "0x00000000" for i in range(537329664,537329700)}
 
     def exec_text(self,lineaText):
-        # Esta liea evalua si existe una etiqueta llemada .text 
+        # Esta liea evalua si existe una etiqueta llemada .text
         if lineaText != None:
             lineaText+= 1
             # Bucle que se usa para evaluar cada una de las lineas de codigo utilizadas
             while True:
-                if lineaText in self.codigo and lineaText != self.registro["lineaData"] and lineaText < max(codigo.codigo) + 1:
+                if lineaText in self.codigo and lineaText != self.registro["lineaData"]:
                     self.comprobar_instruccion(lineaText)
-                else:
+                elif lineaText == self.registro["lineaData"] or lineaText > max(self.codigo) + 1:
                     break
                 lineaText+= 1
-
+    
     def comprobar_instruccion(self,line):
         # Se crea una funcion lambda que servira para saber si el elemento x, se encuentra en en la linea 
         # de codigo que se quiere ejecutar         
@@ -149,7 +150,19 @@ class Codigo:
         # en su codigo. Ejemplo mov add r1, #255
         if len(lista) == 1:
             self.instrucciones[lista[0]](self.codigo[line])
-        
+    
+    def exec_data(self,lineaData):
+        # La logica de esta funcion se maneja de la misma manera que exec_text
+        if lineaData != None:
+            lineaData +=1
+            while True:
+                if lineaData in self.codigo and lineaData != self.registro["lineaText"]:
+                    self.comprobar_instruccion(lineaData)
+                elif lineaData == self.registro["lineaText"] or lineaData > max(self.codigo) + 1:
+                    break
+                lineaData+=1
 
 codigo = Codigo("Codigo.txt")
+codigo.exec_data(codigo.registro["lineaData"])
+print("-------------------------------------")
 codigo.exec_text(codigo.registro["lineaText"])
