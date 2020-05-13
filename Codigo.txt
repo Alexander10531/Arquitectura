@@ -1,13 +1,7 @@
 .text
-etiqueta:   mov r0, #0
+mov r0, #12
+mov r4, #12
 mov r1, #13
-mov r0, r1
-mov r2, 5
+mov r2, r0
 mov r3, #85
-etiqueta: add r1, r2, #2
-wfi
 
-.data
-word1: .word 0x10203040
-word2: .word 0x11213141
-word3: .word 0x12223242
