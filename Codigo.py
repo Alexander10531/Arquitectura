@@ -1,13 +1,15 @@
-#Expresion Regular: ^([\w\d]+:)?\.word\s+(0x[0-9A-Fa-z]+|0b[0-1]+|\d+)$
+# Expresion Regular: ^([A-z]{1}[\w_]*:)?\s*\.word\s+(0x[0-9A-Fa-z]+|0b[0-1]+|\d+)$
+# Valores a tener presente cuando k = 32 [-2147483648,2 147 483 647]
+#
 import re
 
 class Codigo:
 
     def __init__(self,archivo):
         # Registros, tambien se encuentran los valores lineaText, lineaData, error, descrError que se usan para el control del programa
-        self.registro = {"lineaText": None, "lineaData": None, "error" : None, "descrError" : None,"r0":"valor","r1":"valor","r2":"valor","r3":"valor","r4": "valor","r5":"valor","r6":"valor","r7":"valor","r8":"valor","r9":"valor","r10":"valor","r11":"valor","r12":"valor","r13":"valor","r14":"valor","r15":"valor",} 
+        self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"valor","r1":"valor","r2":"valor","r3":"valor","r4": "valor","r5":"valor","r6":"valor","r7":"valor","r8":"valor","r9":"valor","r10":"valor","r11":"valor","r12":"valor","r13":"valor","r14":"valor","r15":"valor",} 
         # Diccionario de instrucciones en las que se encuentran los nombres de las instrucciones y estan asociados a las funciones
-        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strb,"ldr":self.ldr,".word":self.word,"wfi":self.wfi}
+        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,"wfi":self.wfi}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
         self.etiquetas = {}
@@ -83,20 +85,22 @@ class Codigo:
     def ldr(self,line):
         return "Aqui va su codigo :')"
 
-    def strb(self,line):
+    def strp(self,line):
         pass
 
     def obtener_direccion(self,valor = None):
         return hex(537329664 + list(self.ram.values()).index("0x00")) if valor == None else hex(537329664 + list(self.ram.values()).index(valor))
 
     def word(self,line):
-        patron = re.findall(":",line)
-        if len(patron) == 1:
-            print("Esta con etiqueta")
-        elif len(patron) == 0:
-            print("Esta sin etiqueta") 
+        if re.search(r"^([A-z]{1}[\w_]*:)?\s*\.word\s+(0x[0-9A-Fa-z]+|0b[0-1]+|\d+)$",line) != None:
+            if re.search(r"^[\w\d]+:",line) == None:
+                pass
+            else:
+                pass
         else:
-            print("Estas pendejo")
+            self.registro["error"] = 4
+            self.registro["descrError"] = "Error de sintaxis"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
     def wfi(self):
         pass
@@ -152,9 +156,9 @@ class Codigo:
             lineaText+= 1
             # Bucle que se usa para evaluar cada una de las lineas de codigo utilizadas
             while True:
-                if lineaText in self.codigo and lineaText != self.registro["lineaData"]:
+                if lineaText in self.codigo and lineaText != self.registro["lineaData"] and self.registro["error"] == None:
                     self.comprobar_instruccion(lineaText)
-                elif lineaText == self.registro["lineaData"] or lineaText > max(self.codigo) + 1:
+                elif lineaText == self.registro["lineaData"] or lineaText > max(self.codigo) + 1 or self.registro["error"] != None:
                     break
                 lineaText+= 1
     
@@ -171,23 +175,34 @@ class Codigo:
         # en su codigo. Ejemplo mov add r1, #255
         if len(lista) == 1:
             self.instrucciones[lista[0]](self.codigo[line])
-    
+        else:
+            self.registro["error"] = 4
+            self.registro["descrError"] = "Error de sintaxis"
+            self.registro["lineaError"] = line
+
     def exec_data(self,lineaData):
         # La logica de esta funcion se maneja de la misma manera que exec_text
         if lineaData != None:
             lineaData +=1
             while True:
-                if lineaData in self.codigo and lineaData != self.registro["lineaText"]:
+                if lineaData in self.codigo and lineaData != self.registro["lineaText"] and self.registro["error"] == None:
                     self.comprobar_instruccion(lineaData)
-                elif lineaData == self.registro["lineaText"] or lineaData > max(self.codigo) + 1:
+                elif lineaData == self.registro["lineaText"] or lineaData > max(self.codigo) + 1 or self.registro["error"] != None:
                     break
                 lineaData+=1
 
+    def obtener_llave(self,linea,diccionario):
+        
+        #Obtiene los valores y las llaves de un diccionario
+        valores = list(diccionario.values())
+        llaves = list(diccionario.keys())
+
+        # if de una sola linea que devuelve la llave de un diccionario
+        return llaves[valores.index(linea)] if linea in valores else None
+
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
-print("-------------------------------------")
 codigo.exec_text(codigo.registro["lineaText"])
-print(codigo.ram)
-print(codigo.obtener_direccion())
-
-k = 32
+print(codigo.registro["error"])
+print(codigo.registro["descrError"])
+print(codigo.registro["lineaError"])
