@@ -51,6 +51,24 @@ class Codigo:
     def getLineaData(self):
         return self.registro["lineaData"]
 
+    def ca2(self,numero,k):
+        vMin=-2**(k-1)
+        vMax=2**(k-1)-1
+        if numero < 0 and k in [8,16,32] and numero>=vMin and numero<=vMax:
+            not_=int("1"*k,2)
+            numero='{0:0{1}b}'.format(abs(numero),k)
+            ca1=not_-int("%s"%numero,2)
+            ca2 = ca1+1
+            return '0b{0:0{1}b}'.format(ca2,k)
+        elif numero >=0:
+            return numero
+        elif not(numero>=vMin and numero<=vMax):
+            self.registro["error"] = 5
+            self.registro["descrError"] = "El valor no puede almacenarse en k = " + str(k)
+        elif not(k in [8,16,32]):
+            self.registro["error"] = 6
+            self.registro["descrError"] = "K no valido"
+
     def mov(self,line):
         #evalúa la sintaxis de la función mov con un registro y una constante
         lineaConstDec=re.search(r"mov r([0-9]|1[0-5]), #(([0-9]|[1-9][0-9]|2[0-5]{2}))$", line)
@@ -201,8 +219,3 @@ class Codigo:
         return llaves[valores.index(linea)] if linea in valores else None
 
 codigo = Codigo("Codigo.txt")
-codigo.exec_data(codigo.registro["lineaData"])
-codigo.exec_text(codigo.registro["lineaText"])
-print(codigo.registro["error"])
-print(codigo.registro["descrError"])
-print(codigo.registro["lineaError"])
