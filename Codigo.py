@@ -69,6 +69,18 @@ class Codigo:
             self.registro["error"] = 6
             self.registro["descrError"] = "K no valido"
 
+    def ca2ToDec(self, numero):
+        ca2=numero.split("0x")
+        binario = bin(int(ca2[1], 16))[2:]
+        if ((len(binario)==32) and (binario[0] == "1")):
+            normal = ""
+            for i in (binario):
+                if i == "1": normal += '0'
+                else: normal += '1'
+            return ((int(str(normal), 2))+1)*-1
+        else:
+            return int(ca2[1],16)
+
     def mov(self,line):
         #evalúa la sintaxis de la función mov con un registro y una constante
         lineaConstDec=re.search(r"mov r([0-9]|1[0-5]), #(([0-9]|[1-9][0-9]|2[0-5]{2}))$", line)
@@ -85,8 +97,8 @@ class Codigo:
             constante=re.search(r"#0b([0-1]{1,8})", line).group().split("0b")
             self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),2),8) 
         elif lineaConstHex != None:
-            constante=re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})", line).group().split("0x")
-            self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8) 
+            constante=re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})", line).group().split("0x") or re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})",line).group().split("0X")
+            self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8)  
         elif lineaRegis != None: 
             registro2=re.search(r", r([0-9]{1,2})", line).group().split(" ") #para extraer el segundo registro usado en la función
             self.registro[registro]=self.registro[registro2[1]]
