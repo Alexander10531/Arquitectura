@@ -55,13 +55,15 @@ class Codigo:
     def ca2(self,numero,k):
         vMin=-2**(k-1)
         vMax=2**(k-1)-1
+        print("Minimo" + str(vMax))        
+        print("Minimo" + str(vMin))
         if numero < 0 and k in [8,16,32] and numero>=vMin and numero<=vMax:
             not_=int("1"*k,2)
             numero='{0:0{1}b}'.format(abs(numero),k)
             ca1=not_-int("%s"%numero,2)
             ca2 = ca1+1
             return '0b{0:0{1}b}'.format(ca2,k)
-        elif numero >=0:
+        elif numero >=0 and numero<=vMax:
             return "0b{0:0{1}b}".format(numero,k)
         elif not(numero>=vMin and numero<=vMax):
             self.registro["error"] = 5
@@ -254,10 +256,3 @@ class Codigo:
     def guardar_etiqueta(self,etiqueta,direccion,valor):
         self.etiqueta[str(etiqueta)] = str(valor) + direccion
 
-codigo = Codigo("Codigo.txt")
-codigo.exec_data(codigo.registro["lineaData"])
-codigo.exec_text(codigo.registro["lineaText"])
-print(codigo.registro["error"])
-print(codigo.etiqueta)
-print(codigo.ram)
-print(codigo.etiqueta)
