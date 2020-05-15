@@ -62,7 +62,7 @@ class Codigo:
             ca2 = ca1+1
             return '0b{0:0{1}b}'.format(ca2,k)
         elif numero >=0:
-            return numero
+            return "0b{0:0{1}b}".format(numero,k)
         elif not(numero>=vMin and numero<=vMax):
             self.registro["error"] = 5
             self.registro["descrError"] = "El valor no puede almacenarse en k = " + str(k)
