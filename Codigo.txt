@@ -2,4 +2,6 @@
     Etiqueta_1:.word -2147483648
     Etiqueta_2:.word -2147483647
     .word -2147483646
+.text
+    mov r22, #255
     
