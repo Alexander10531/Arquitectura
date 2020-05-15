@@ -12,9 +12,10 @@ class Codigo:
         self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,"wfi":self.wfi}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
-        self.etiquetas = {}
+        self.etiqueta = {}
         self.ram = {}
         self.ram = self.crear_memoria(self.ram)
+        self.ram["ultima"] = "0x20070000"
         # Lectura de linea por linea del texto en cuestion
         self.codigo = {}
         self.archivo = archivo
@@ -110,11 +111,29 @@ class Codigo:
         return hex(537329664 + list(self.ram.values()).index("0x00")) if valor == None else hex(537329664 + list(self.ram.values()).index(valor))
 
     def word(self,line):
-        if re.search(r"^([A-z]{1}[\w_]*:)?\s*\.word\s+(0x[0-9A-Fa-z]+|0b[0-1]+|\d+)$",line) != None:
-            if re.search(r"^[\w\d]+:",line) == None:
-                pass
+        if re.search(r"^([A-z]{1}[\w_]*:)?\s*\.word\s+-?(0x[0-9A-Fa-z]+|0b[0-1]+|\d+)$",line) != None:
+            valor = {re.search(r"-?0x[0-9A-F]+$",line):16, re.search(r"-?0b[01]+$",line):2}
+            valor.pop(None)
+            valor = int(list(valor.keys())[0].group(),valor[list(valor.keys())[0]]) if len(valor) == 1 else int(re.search(r"-?\d+$",line).group())
+            if valor >= -2**31 and valor <= 2**31 - 1:
+
+                valor = hex(int(self.ca2(valor,32),2))
+                direccion = self.ram["ultima"]
+                
+                self.ram["ultima"] = hex(int(direccion,16) + 3)
+                self.ram[direccion] = "0x" + str(valor[8:]).upper()
+                self.ram["0x" + hex(int(direccion,16) + 1)[2:].upper()] = "0x" + str(valor[6:8]).upper()
+                self.ram["0x" + hex(int(direccion,16) + 2)[2:].upper()] = "0x" + str(valor[4:6]).upper()
+                self.ram["0x" + hex(int(direccion,16) + 3)[2:].upper()] = "0x" + str(valor[2:4]).upper()
+
+                self.ram["ultima"] = "0x" + hex(int(direccion,16) + 4)[2:].upper()
+
+                if re.search(r"^([A-z]{1}[\w_]*:)",line) != None:
+                    self.guardar_etiqueta(re.search(r"^([A-z]{1}[\w_]*:)",line).group(),direccion,4)
             else:
-                pass
+                self.registro["error"] = 5 
+                self.registro["descrError"] = "El valor no puede almacenarse en k"
+                self.registro["lineaError"] = self.obtener_llave(line,self.registro)
         else:
             self.registro["error"] = 4
             self.registro["descrError"] = "Error de sintaxis"
@@ -166,7 +185,8 @@ class Codigo:
 
     def crear_memoria(self,memoria): 
         # Creacion de un diccionario que asocia la direccion de memoria con su valor por defecto, 0x00000000
-        return {str(hex(i)).upper() : "0x00" for i in range(537329664,537329700)}
+
+        return {"0x" + str(hex(i)[2:]).upper() : "0x00" for i in range(537329664,537329700)}
 
     def exec_text(self,lineaText):
         # Esta liea evalua si existe una etiqueta llemada .text
@@ -218,4 +238,13 @@ class Codigo:
         # if de una sola linea que devuelve la llave de un diccionario
         return llaves[valores.index(linea)] if linea in valores else None
 
+    def guardar_etiqueta(self,etiqueta,direccion,valor):
+        self.etiqueta[str(etiqueta)] = str(valor) + direccion
+
 codigo = Codigo("Codigo.txt")
+codigo.exec_data(codigo.registro["lineaData"])
+codigo.exec_text(codigo.registro["lineaText"])
+#print(codigo.registro["error"])
+#print(codigo.etiqueta)
+print(codigo.ram)
+print(codigo.etiqueta)

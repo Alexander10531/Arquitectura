@@ -3,3 +3,4 @@ Codigo Error = 2: Se definio dos vece .text
 Codigo Error = 3: instrucciones repetidas
 Codigo Error = 4: Error de sintaxis
 Codigo Error = 5: "El valor no puede almacenarse en k = " + str(k)
+ 
