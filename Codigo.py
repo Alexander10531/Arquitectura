@@ -1,10 +1,9 @@
-# Expresion Regular: ^([A-z]{1}[\w_]*:)?\s*\.word\s+(0x[0-9A-Fa-z]+|0b[0-1]+|\d+)$
-# Valores a tener presente cuando k = 32 [-2147483648,2 147 483 647]
-#
+#^ldr\s+r[0-9]{1,2},\s+(=[A-z]+|\[r[0-9]{1,2}\]|=(0x\w+|0b[01]+|\d+))$
+
 import re
 
 class Codigo:
-
+    
     def __init__(self,archivo):
         # Registros, tambien se encuentran los valores lineaText, lineaData, error, descrError que se usan para el control del programa
         self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"valor","r1":"valor","r2":"valor","r3":"valor","r4": "valor","r5":"valor","r6":"valor","r7":"valor","r8":"valor","r9":"valor","r10":"valor","r11":"valor","r12":"valor","r13":"valor","r14":"valor","r15":"valor",} 
@@ -12,7 +11,7 @@ class Codigo:
         self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,"wfi":self.wfi}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
-        self.etiqueta = {}
+        self.etiqueta = {} 
         self.ram = {}
         self.ram = self.crear_memoria(self.ram)
         self.ram["ultima"] = "0x20070000"
@@ -117,7 +116,7 @@ class Codigo:
         return "Aqui va su codigo :')"
 
     def ldr(self,line):
-        return "Aqui va su codigo :')"
+        return "Aqui va tu funcion"
 
     def strp(self,line):
         pass
@@ -256,3 +255,8 @@ class Codigo:
     def guardar_etiqueta(self,etiqueta,direccion,valor):
         self.etiqueta[str(etiqueta)] = str(valor) + direccion
 
+codigo = Codigo("Codigo.txt")
+codigo.exec_text(codigo.registro["lineaText"])
+codigo.exec_data(codigo.registro["lineaData"])
+
+print(codigo.etiqueta)
