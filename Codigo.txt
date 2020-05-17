@@ -1,3 +1,2 @@
-.text
-    ldr r1, [r0]
-    .byte 0x10203040
+.data  
+    hword: .hword 0x20
