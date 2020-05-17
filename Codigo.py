@@ -69,7 +69,7 @@ class Codigo:
             self.registro["error"] = 6
             self.registro["descrError"] = "K no valido"
 
-    def ca2ToDec(self, numero):
+    def ca2_decimal(self, numero):
         ca2=numero.split("0x")
         binario = bin(int(ca2[1], 16))[2:]
         if ((len(binario)==32) and (binario[0] == "1")):
@@ -82,14 +82,16 @@ class Codigo:
             return int(ca2[1],16)
 
     def mov(self,line):
+        print(line)
         #evalúa la sintaxis de la función mov con un registro y una constante
-        lineaConstDec=re.search(r"mov r([0-9]|1[0-5]), #(([0-9]|[1-9][0-9]|2[0-5]{2}))$", line)
-        lineaConstBin=re.search(r"mov r([0-9]|1[0-5]), #0b([0-1]{1,8})$", line)
-        lineaConstHex=re.search(r"mov r([0-9]|1[0-5]), #(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})$", line)
+        lineaConstDec=re.search(r"mov r([0-9]|1[0-5]), #(([0-9]|[1-9][0-9]|2[0-5]{2}))\s*", line)
+        lineaConstBin=re.search(r"mov r([0-9]|1[0-5]), #0b([0-1]{1,8})\s*", line)
+        lineaConstHex=re.search(r"mov r([0-9]|1[0-5]), #(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})\s*", line)
         #evalúa la sintaxis de la función mov con dos registros
-        lineaRegis=re.search(r"mov r([0-9]|1[0-5]), r([0-9]|1[0-5])$", line)
+        lineaRegis=re.search(r"mov r([0-9]|1[0-5]), r([0-9]|1[0-5])\s*", line)
 
         registro=re.search(r"r([0-9]{1,2})", line).group() #para extraer el registro usado en la función
+        print(registro)
         if lineaConstDec != None: 
             constante=re.search(r"#([0-9]{1,2})", line).group().split("#") #para extraer la constante
             self.registro[registro]='0x{0:0{1}X}'.format(int(constante[1]),8)
@@ -101,7 +103,7 @@ class Codigo:
             self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8)  
         elif lineaRegis != None: 
             registro2=re.search(r", r([0-9]{1,2})", line).group().split(" ") #para extraer el segundo registro usado en la función
-            self.registro[registro]=self.registro[registro2[1]]
+            self.registro[registro2[1]]=self.registro[registro]
         else:
             self.registro["error"] = 4
             self.registro["descrError"] = "Error de sintaxis"
