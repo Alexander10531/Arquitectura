@@ -1,5 +1,3 @@
-# ^ldr\s+r[0-9]{1,2},\s+(=[A-z]+|\[r[0-9]{1,2}\]|=(0x\w+|0b[01]+|\d+))$
-# ^str\s+r[0-9]{1,2}\s*,\s*\[r\d{1,2}(,r\d{1,2}|,#\d{1,2})?\s*\]$
 import re
 
 class Codigo:
@@ -8,7 +6,7 @@ class Codigo:
         # Registros, tambien se encuentran los valores lineaText, lineaData, error, descrError que se usan para el control del programa
         self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"valor","r1":"valor","r2":"valor","r3":"valor","r4": "valor","r5":"valor","r6":"valor","r7":"valor","r8":"valor","r9":"valor","r10":"valor","r11":"valor","r12":"valor","r13":"valor","r14":"valor","r15":"valor",} 
         # Diccionario de instrucciones en las que se encuentran los nombres de las instrucciones y estan asociados a las funciones
-        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte,".quead",self.quad}
+        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
         self.etiqueta = {} 
@@ -380,5 +378,4 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
-print(codigo.ram)
-print(codigo.etiqueta)
+print(codigo.registro)
