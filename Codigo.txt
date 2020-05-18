@@ -1,27 +1,2 @@
-.data
-    Etiqueta:.hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    .hword 0x1020
-    
+.data 
+    .quad 0x10 20 30 40 50 60
