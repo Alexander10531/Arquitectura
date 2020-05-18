@@ -1,2 +1,27 @@
-.data  
-    hword: .hword 0x20
+.data
+    Etiqueta:.hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    .hword 0x1020
+    
