@@ -119,7 +119,45 @@ class Codigo:
         return "Aqui va tu funcion"
 
     def strp(self,line):
-        pass
+       if re.search("^str\s+r[0-9]{1,2}\s*,\s*\[\s*r\d{1,2}(\s*,\s*r\d{1,2}|\s*,\s*#\d{1,2})?\s*\]$",line) != None:
+       	#Extrae el o los registros utilizados y el #offset
+       	registros = re.findall("r\d{1,2}|#\d{1,2}",line)
+         #verifica si la instruccion es del tipo "srt rd, [rb]"  
+         if len(registros)==2:
+         	# verifica si el numero de los registros es valido
+       	 	if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 12 and int(registros[1][1:])>-1 and int((registros[1][1:]) <12:
+       	 		#extrae el numero hexadecimal almacenado en el registro convertido a string
+            	valorregistro=str(self.registro[registros[0]])
+            	#extrae la direccion ram almacenada en el registro convertida a string
+            	direccionram= str(self.registro[registros[1]])
+            	#almacena el valor del registro en la direccion ram
+            	self.ram[direccionram]= "0x" + valorregistro[8:].upper()
+            	self.ram["0x" + hex(int(direccionram,16) + 1)[2:].upper()] = "0x" + valorregistro[6:8].upper()
+            	self.ram["0x" + hex(int(direccionram,16) + 2)[2:].upper()] = "0x" + valorregistro[4:6].upper()
+            	self.ram["0x" + hex(int(direccionram,16) + 3)[2:].upper()] = "0x" + valorregistro[2:4].upper()
+
+            else:
+          	self.registro["error"]=5
+          	self.registro["descrError"]= "El valor del registro no es valido"
+          	self.registro["lineaError"]= self.obtener_llave(line,self.codigo)
+          	#verifica si la instruccion es del tipo str rd, [rb, #c] 
+          elif len(registros)==3 and registros[2][:1]=="#":
+          	# verifica si el numero de los registros es valido
+          	if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 12 and int(registros[1][1:])>-1 and int((registros[1][1:]) <12:
+          		# verifica si el offset es valido debe ser multiplo de 4 y estar entre 0-40
+            	if int(registros[2][1:])%4==0 and int(registros[2][1:])<40
+            		valorregistro=str(self.registro[registros[0]])
+            		direccionram= str(self.registro[registros[1]])
+            		#almacena el valor del registro en la direccion ram pero primero suma la direccion ram mas el offset
+            		self.ram["0x" + hex(int(direccionram,16) + int(registros[2][1:])).upper()] = "0x" + valorregistro[8:].upper()
+            		self.ram["0x" + hex(int(direccionram,16) + 1)[2:].upper()] = "0x" + valorregistro[6:8].upper()
+            		self.ram["0x" + hex(int(direccionram,16) + 2)[2:].upper()] = "0x" + valorregistro[4:6].upper()
+            		self.ram["0x" + hex(int(direccionram,16) + 3)[2:].upper()] = "0x" + valorregistro[2:4].upper()
+
+            	else: 
+          		self.registro["error"]=4
+          		self.registro["descrError"]= "Error de sintaxis"
+          		self.registro["lineaError"]= self.obtener_llave(line,self.codigo)
 
     def obtener_direccion(self,valor = None):
         return hex(537329664 + list(self.ram.values()).index("0x00")) if valor == None else hex(537329664 + list(self.ram.values()).index(valor))
