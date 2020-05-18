@@ -4,7 +4,7 @@ class Codigo:
     
     def __init__(self,archivo):
         # Registros, tambien se encuentran los valores lineaText, lineaData, error, descrError que se usan para el control del programa
-        self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"valor","r1":"valor","r2":"valor","r3":"valor","r4": "valor","r5":"valor","r6":"valor","r7":"valor","r8":"valor","r9":"valor","r10":"valor","r11":"valor","r12":"valor","r13":"valor","r14":"valor","r15":"valor",} 
+        self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"0x00000000","r1":"0x00000000","r2":"0x00000000","r3":"0x00000000","r4": "0x00000000","r5":"0x00000000","r6":"0x00000000","r7":"0x00000000","r8":"0x00000000","r9":"0x00000000","r10":"0x00000000","r11":"0x00000000","r12":"0x00000000","r13":"0x00000000","r14":"0x00000000","r15":"0x00000000",} 
         # Diccionario de instrucciones en las que se encuentran los nombres de las instrucciones y estan asociados a las funciones
         self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
@@ -80,25 +80,24 @@ class Codigo:
             return int(ca2[1],16)
 
     def mov(self,line):
-        print(line)
         #evalúa la sintaxis de la función mov con un registro y una constante
-        lineaConstDec=re.search(r"mov r([0-9]|1[0-5]), #(([0-9]|[1-9][0-9]|2[0-5]{2}))\s*", line)
-        lineaConstBin=re.search(r"mov r([0-9]|1[0-5]), #0b([0-1]{1,8})\s*", line)
-        lineaConstHex=re.search(r"mov r([0-9]|1[0-5]), #(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})\s*", line)
+        lineaConstDec=re.search(r"mov r([0-9]|1[0-5]), #(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-5]{2}))\s*$", line)
+        lineaConstBin=re.search(r"mov r([0-9]|1[0-5]), #0b([0-1]{1,8})\s*$", line)
+        lineaConstHex=re.search(r"mov r([0-9]|1[0-5]), #(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})\s*$", line)
         #evalúa la sintaxis de la función mov con dos registros
         lineaRegis=re.search(r"mov r([0-9]|1[0-5]), r([0-9]|1[0-5])\s*", line)
-
+   
         registro=re.search(r"r([0-9]{1,2})", line).group() #para extraer el registro usado en la función
         print(registro)
         if lineaConstDec != None: 
-            constante=re.search(r"#([0-9]{1,2})", line).group().split("#") #para extraer la constante
+            constante=re.search(r"#([0-9]{1,3})", line).group().split("#") #para extraer la constante
             self.registro[registro]='0x{0:0{1}X}'.format(int(constante[1]),8)
         elif lineaConstBin != None:
             constante=re.search(r"#0b([0-1]{1,8})", line).group().split("0b")
             self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),2),8) 
         elif lineaConstHex != None:
             constante=re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})", line).group().split("0x") or re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})",line).group().split("0X")
-            self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8)  
+            self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8)
         elif lineaRegis != None: 
             registro2=re.search(r", r([0-9]{1,2})", line).group().split(" ") #para extraer el segundo registro usado en la función
             self.registro[registro2[1]]=self.registro[registro]
@@ -379,3 +378,5 @@ codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
 print(codigo.registro)
+print(codigo.ram)
+print(codigo.etiqueta)
