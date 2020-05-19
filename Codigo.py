@@ -117,9 +117,9 @@ class Codigo:
 
     def strp(self,line):
         if re.search("^str\s+r[0-9]{1,2}\s*,\s*\[\s*r\d{1,2}(\s*,\s*r\d{1,2}|\s*,\s*#\d{1,2})?\s*\]$",line) != None:
-       	    
+
             registros = re.findall("r\d{1,2}|#\d{1,2}",line)
-            
+
             if len(registros) == 2:
                 if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 12 and int(registros[1][1:]) >-1 and int(registros[1][1:]) < 12:
        	 		
@@ -374,9 +374,9 @@ class Codigo:
             self.registro["descrError"] = "La etiqueta ya se incializo"
             self.registro["lineaError"] = self.obtener_llave(linea,self.codigo)
 
-codigo = Codigo("Codigo.txt")
-codigo.exec_data(codigo.registro["lineaData"])
-codigo.exec_text(codigo.registro["lineaText"])
-print(codigo.registro)
-print(codigo.ram)
-print(codigo.etiqueta)
+#codigo = Codigo("Codigo.txt")
+#codigo.registro["r1"] = "Valor"
+#codigo.exec_data(codigo.registro["lineaData"])
+#codigo.exec_text(codigo.registro["lineaText"])
+#print(codigo.ram)
+
