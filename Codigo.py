@@ -1,14 +1,12 @@
-#^ldr\s+r[0-9]{1,2},\s+(=[A-z]+|\[r[0-9]{1,2}\]|=(0x\w+|0b[01]+|\d+))$
-
 import re
 
 class Codigo:
     
     def __init__(self,archivo):
         # Registros, tambien se encuentran los valores lineaText, lineaData, error, descrError que se usan para el control del programa
-        self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"valor","r1":"valor","r2":"valor","r3":"valor","r4": "valor","r5":"valor","r6":"valor","r7":"valor","r8":"valor","r9":"valor","r10":"valor","r11":"valor","r12":"valor","r13":"valor","r14":"valor","r15":"valor",} 
+        self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"0x00000000","r1":"0x00000000","r2":"0x00000000","r3":"0x00000000","r4": "0x00000000","r5":"0x00000000","r6":"0x00000000","r7":"0x00000000","r8":"0x00000000","r9":"0x00000000","r10":"0x00000000","r11":"0x00000000","r12":"0x00000000","r13":"0x00000000","r14":"0x00000000","r15":"0x00000000",} 
         # Diccionario de instrucciones en las que se encuentran los nombres de las instrucciones y estan asociados a las funciones
-        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,"wfi":self.wfi}
+        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
         self.etiqueta = {} 
@@ -54,8 +52,6 @@ class Codigo:
     def ca2(self,numero,k):
         vMin=-2**(k-1)
         vMax=2**(k-1)-1
-        print("Minimo" + str(vMax))        
-        print("Minimo" + str(vMin))
         if numero < 0 and k in [8,16,32] and numero>=vMin and numero<=vMax:
             not_=int("1"*k,2)
             numero='{0:0{1}b}'.format(abs(numero),k)
@@ -71,7 +67,7 @@ class Codigo:
             self.registro["error"] = 6
             self.registro["descrError"] = "K no valido"
 
-    def ca2ToDec(self, numero):
+    def ca2_decimal(self, numero):
         ca2=numero.split("0x")
         binario = bin(int(ca2[1], 16))[2:]
         if ((len(binario)==32) and (binario[0] == "1")):
@@ -85,25 +81,26 @@ class Codigo:
 
     def mov(self,line):
         #evalúa la sintaxis de la función mov con un registro y una constante
-        lineaConstDec=re.search(r"mov r([0-9]|1[0-5]), #(([0-9]|[1-9][0-9]|2[0-5]{2}))$", line)
-        lineaConstBin=re.search(r"mov r([0-9]|1[0-5]), #0b([0-1]{1,8})$", line)
-        lineaConstHex=re.search(r"mov r([0-9]|1[0-5]), #(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})$", line)
+        lineaConstDec=re.search(r"mov r([0-9]|1[0-5]), #(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-5]{2}))\s*$", line)
+        lineaConstBin=re.search(r"mov r([0-9]|1[0-5]), #0b([0-1]{1,8})\s*$", line)
+        lineaConstHex=re.search(r"mov r([0-9]|1[0-5]), #(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})\s*$", line)
         #evalúa la sintaxis de la función mov con dos registros
-        lineaRegis=re.search(r"mov r([0-9]|1[0-5]), r([0-9]|1[0-5])$", line)
-
+        lineaRegis=re.search(r"mov r([0-9]|1[0-5]), r([0-9]|1[0-5])\s*", line)
+   
         registro=re.search(r"r([0-9]{1,2})", line).group() #para extraer el registro usado en la función
+        print(registro)
         if lineaConstDec != None: 
-            constante=re.search(r"#([0-9]{1,2})", line).group().split("#") #para extraer la constante
+            constante=re.search(r"#([0-9]{1,3})", line).group().split("#") #para extraer la constante
             self.registro[registro]='0x{0:0{1}X}'.format(int(constante[1]),8)
         elif lineaConstBin != None:
             constante=re.search(r"#0b([0-1]{1,8})", line).group().split("0b")
             self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),2),8) 
         elif lineaConstHex != None:
             constante=re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})", line).group().split("0x") or re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})",line).group().split("0X")
-            self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8)  
+            self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8)
         elif lineaRegis != None: 
             registro2=re.search(r", r([0-9]{1,2})", line).group().split(" ") #para extraer el segundo registro usado en la función
-            self.registro[registro]=self.registro[registro2[1]]
+            self.registro[registro2[1]]=self.registro[registro]
         else:
             self.registro["error"] = 4
             self.registro["descrError"] = "Error de sintaxis"
@@ -206,35 +203,197 @@ class Codigo:
         
 
     def strp(self,line):
-        pass
+        if re.search("^str\s+r[0-9]{1,2}\s*,\s*\[\s*r\d{1,2}(\s*,\s*r\d{1,2}|\s*,\s*#\d{1,2})?\s*\]$",line) != None:
+
+            registros = re.findall("r\d{1,2}|#\d{1,2}",line)
+
+            if len(registros) == 2:
+
+                if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 12 and int(registros[1][1:]) >-1 and int(registros[1][1:]) < 12:
+       	 		
+                    valorregistro = self.registro[registros[0]]
+                    direccionRam = self.registro[registros[1]]
+
+                    self.ram[direccionRam]= "0x" + valorregistro[8:].upper()
+                    self.ram["0x" + hex(int(direccionRam,16) + 1)[2:].upper()] = "0x" + valorregistro[6:8].upper()
+                    self.ram["0x" + hex(int(direccionRam,16) + 2)[2:].upper()] = "0x" + valorregistro[4:6].upper()
+                    self.ram["0x" + hex(int(direccionRam,16) + 3)[2:].upper()] = "0x" + valorregistro[2:4].upper()
+
+                else:
+                    
+          	        self.registro["error"] = 5
+                    self.registro["descrError"] = "El valor del registro no es valido"
+          	        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+          	 
+            elif len(registros)==3 and registros[2][:1] == "#":
+
+                if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 12 and int(registros[1][1:])>-1 and int(registros[1][1:]) <12:
+          		
+                    if int(registros[2][1:])%4==0 and int(registros[2][1:]) < 36:
+            		
+                        valorregistro=self.registro[registros[0]]
+                        direccionRam= self.registro[registros[1]]
+                        valorOffset= int(registros[2][1:])
+            		
+                        self.ram["0x" + hex(int(direccionRam,16) + valorOffset)[2:].upper()] = "0x" + valorregistro[8:].upper()
+                        self.ram["0x" + hex(int(direccionRam,16) + (1 + valorOffset))[2:].upper()] = "0x" + valorregistro[6:8].upper()
+                        self.ram["0x" + hex(int(direccionRam,16) + (2 + valorOffset))[2:].upper()] = "0x" + valorregistro[4:6].upper()
+                        self.ram["0x" + hex(int(direccionRam,16) + (3 + valorOffset))[2:].upper()] = "0x" + valorregistro[2:4].upper()
+
+                    else:
+                      
+                        self.registro["error"] = 5
+                        self.registro["descrError"] = "El valor del offset no es valido"
+          	            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+
+
+                else: 
+          		
+                    self.registro["error"] = 5
+                    self.registro["descrError"] = "El valor del registro no es valido"
+                    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+        # verifica si la instruccion es del tipo rb, [rc,rd]
+            elif len(registros)==3 and registros[2][:1] == "r":
+            
+                if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 12 and int(registros[1][1:])>-1 and int(registros[1][1:]) <12 and int(registros[2][1:])>-1 and int(registros[2][1:])<12:
+                
+                    valorregistro1= int(self.registro[registros[2]],16)
+
+                    if valorregistro1%4==0 and valorregistro1<36:
+
+                        valorregistro=self.registro[registro[0]]
+                        direccionRam= self.registro[registros[1]]
+            
+                        self.ram["0x" + hex(int(direccionRam,16) + valorregistro1)[2:].upper()] = "0x" + valorregistro[8:].upper()
+                        self.ram["0x" + hex(int(direccionRam,16) + (1 + valorregistro1))[2:].upper()] = "0x" + valorregistro[6:8].upper()
+                        self.ram["0x" + hex(int(direccionRam,16) + (2 + valorregistro1))[2:].upper()] = "0x" + valorregistro[4:6].upper()
+                        self.ram["0x" + hex(int(direccionRam,16) + (3 + valorregistro1))[2:].upper()] = "0x" + valorregistro[2:4].upper()
+
+                    else:
+
+                        self.registro["error"] = 5
+                        self.registro["descrError"] = "El valor del offset no es valido"
+          	            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+            
+                else:
+
+                    self.registro["error"] = 5
+          	        self.registro["descrError"] = "El valor del registro no es valido"
+          	        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+
+            else:
+
+                self.registro["error"] = 4
+                self.registro["descrError"] = "Error de sintaxis"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+
+
 
     def obtener_direccion(self,valor = None):
         return hex(537329664 + list(self.ram.values()).index("0x00")) if valor == None else hex(537329664 + list(self.ram.values()).index(valor))
 
     def word(self,line):
         if re.search(r"^([A-z]{1}[\w_]*:)?\s*\.word\s+-?(0x[0-9A-Fa-z]+|0b[0-1]+|\d+)$",line) != None:
-            valor = {re.search(r"-?0x[0-9A-F]+$",line):16, re.search(r"-?0b[01]+$",line):2}
-            valor.pop(None)
-            valor = int(list(valor.keys())[0].group(),valor[list(valor.keys())[0]]) if len(valor) == 1 else int(re.search(r"-?\d+$",line).group())
-            if valor >= -2**31 and valor <= 2**31 - 1:
-
-                valor = hex(int(self.ca2(valor,32),2))
-                direccion = self.ram["ultima"]
+            
+            if int(self.ram["ultima"],16) <= 537329700:
                 
-                self.ram["ultima"] = hex(int(direccion,16) + 3)
-                self.ram[direccion] = "0x" + str(valor[8:]).upper()
-                self.ram["0x" + hex(int(direccion,16) + 1)[2:].upper()] = "0x" + str(valor[6:8]).upper()
-                self.ram["0x" + hex(int(direccion,16) + 2)[2:].upper()] = "0x" + str(valor[4:6]).upper()
-                self.ram["0x" + hex(int(direccion,16) + 3)[2:].upper()] = "0x" + str(valor[2:4]).upper()
+                valor = {re.search(r"-?0x[0-9A-F]+$",line):16, re.search(r"-?0b[01]+$",line):2}
+                valor.pop(None)
+                valor = int(list(valor.keys())[0].group(),valor[list(valor.keys())[0]]) if len(valor) == 1 else int(re.search(r"-?\d+$",line).group())
 
-                self.ram["ultima"] = "0x" + hex(int(direccion,16) + 4)[2:].upper()
+                if valor >= -2**31 and valor <= 2**31:
 
-                if re.search(r"^([A-z]{1}[\w_]*:)",line) != None:
-                    self.guardar_etiqueta(re.search(r"^([A-z]{1}[\w_]*:)",line).group(),direccion,4)
+                    valor = hex(int(self.ca2(valor,32),2))
+                    valor = "0x" + (10 - len(valor)) * "0" + valor[2:]
+                    direccion = self.ram["ultima"]
+                    self.ram["ultima"] = hex(int(direccion,16) + 3)
+                    self.ram[direccion] = "0x" + str(valor[8:]).upper()
+                    self.ram["0x" + hex(int(direccion,16) + 1)[2:].upper()] = "0x" + str(valor[6:8]).upper()
+                    self.ram["0x" + hex(int(direccion,16) + 2)[2:].upper()] = "0x" + str(valor[4:6]).upper()
+                    self.ram["0x" + hex(int(direccion,16) + 3)[2:].upper()] = "0x" + str(valor[2:4]).upper()
+                    self.ram["ultima"] = "0x" + hex(int(direccion,16) + 4)[2:].upper()
+
+                    if re.search(r"^([A-z]{1}[\w_]*:)",line) != None:
+                        self.guardar_etiqueta(re.search(r"^([A-z]{1}[\w_]*:)",line).group(),direccion,4,line)
+
+                    del(direccion)
+                    del(valor)
+
+                else:
+                    self.registro["error"] = 5 
+                    self.registro["descrError"] = "El valor no puede almacenarse en k"
+                    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)                
             else:
-                self.registro["error"] = 5 
-                self.registro["descrError"] = "El valor no puede almacenarse en k"
-                self.registro["lineaError"] = self.obtener_llave(line,self.registro)
+                self.registro["error"] = 7
+                self.registro["descrError"] = "No hay suficiente memoria para reservar una palabra"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)                 
+        else:
+            self.registro["error"] = 4
+            self.registro["descrError"] = "Error de sintaxis"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+
+    def byte(self,line):
+        
+        if re.search(r"^([A-z]{1}\w*:)?\s*\.byte\s+-?(0x[A-Fa-f0-9]+|0b[01]+|\d+)$",line) != None:
+            if int(self.ram["ultima"],16) < 537329704:
+                
+                valor = {re.search(r"0x[A-Fa-f0-9]+$",line):16,re.search(r"0b[01]+$",line):2}
+                valor.pop(None)
+                valor = int(list(valor.keys())[0].group(),valor[list(valor.keys())[0]]) if len(valor) == 1 else int(re.search(r"-?\d+$",line).group())
+                
+                if valor >= -128 and valor <= 127:
+                    
+                    valor = hex(int(self.ca2(valor,8),2))
+                    valor = "0x" + (2 - len(valor)) * "0" + valor[2:]
+                    self.ram[self.ram["ultima"]] = "0x" + str(valor[2:]).upper()
+                    
+                    if re.search(r"^([A-z]{1}\w*:)",line) != None:
+                        self.guardar_etiqueta(re.search(r"^([A-z]{1}\w*:)",line).group(),self.ram["ultima"],1,line)
+                    
+                    del(valor)
+                    self.ram["ultima"] = "0x" + hex(int(self.ram["ultima"],16) + 1)[2:].upper()
+
+                else:
+                    self.registro["error"] = 5
+                    self.registro["descrError"] = "El valor no puede almacenarse en k = 8"
+                    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+            else:
+                self.registro["error"] = 8
+                self.registro["descrError"] = "No hay suficiente memoria para reservar un byte"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)                
+        else:
+            self.registro["error"] = 4
+            self.registro["descrError"] = "Error de sintaxis"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+
+    def hword(self,line):
+        
+        if(re.search(r"^([A-z]{1}\w*:)?\s*\.hword\s+-?(0x[A-Fa-f0-9]+|0b[01]+|\d+)$",line)) != None:
+            if int(self.ram["ultima"],16) <= 537329702:
+                
+                valor = {re.search(r"0x[A-Fa-f0-9]+$",line):16,re.search(r"0b[01]+$",line):2}
+                valor.pop(None)
+                valor = int(list(valor.keys())[0].group(),valor[list(valor.keys())[0]]) if len(valor) == 1 else int(re.search(r"-?\d+$",line).group())
+                
+                if valor >= -32768 and valor <= 32767:
+                    valor = hex(int(self.ca2(valor,16),2))
+                    valor = "0x" + (6 - len(valor)) * "0" + valor[2:]
+                    direccion = self.ram["ultima"]
+                    self.ram[direccion] = "0x" + str(valor[4:]).upper()
+                    self.ram["0x" + hex(int(direccion,16) + 1)[2:].upper()] = "0x" + str(valor[2:4]).upper()
+
+                    if(re.search(r"^([A-z]{1}\w*:)",line)) != None:
+                        self.guardar_etiqueta(re.search(r"^([A-z]{1}\w*:)",line).group(),direccion,2,line)                
+                    self.ram["ultima"] = "0x" + hex(int(direccion,16) + 2)[2:].upper()
+                     
+                else:
+                    self.registro["error"] = 9
+                    self.registro["descrError"] = "No hay suficiente memoria para reservar una media palabra"
+                    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+            else:
+                self.registro["error"] = 4
+                self.registro["descrError"] = "Error de sintaxis"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)                
         else:
             self.registro["error"] = 4
             self.registro["descrError"] = "Error de sintaxis"
@@ -287,7 +446,7 @@ class Codigo:
     def crear_memoria(self,memoria): 
         # Creacion de un diccionario que asocia la direccion de memoria con su valor por defecto, 0x00000000
 
-        return {"0x" + str(hex(i)[2:]).upper() : "0x00" for i in range(537329664,537329700)}
+        return {"0x" + str(hex(i)[2:]).upper() : "0x00" for i in range(537329664,537329704)}
 
     def exec_text(self,lineaText):
         # Esta liea evalua si existe una etiqueta llemada .text
@@ -339,8 +498,13 @@ class Codigo:
         # if de una sola linea que devuelve la llave de un diccionario
         return llaves[valores.index(linea)] if linea in valores else None
 
-    def guardar_etiqueta(self,etiqueta,direccion,valor):
-        self.etiqueta[str(etiqueta)] = str(valor) + direccion
+    def guardar_etiqueta(self,etiqueta,direccion,valor,linea):
+        if etiqueta not in self.etiqueta:
+            self.etiqueta[str(etiqueta)] = str(valor) + direccion
+        else:
+            self.registro["error"] = 6 
+            self.registro["descrError"] = "La etiqueta ya se incializo"
+            self.registro["lineaError"] = self.obtener_llave(linea,self.codigo)
 
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])

@@ -1,5 +1,9 @@
 .data 
+<<<<<<< HEAD
     Etiqueta: .word 0x10203040
 .text
     ldr r1, [r0]
     
+=======
+	.word 0x11213141
+>>>>>>> 674ae59799b50812e304f563b8e70db6c4ef37f7
