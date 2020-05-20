@@ -142,7 +142,7 @@ class Codigo:
 
                 if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 12 and int(registros[1][1:])>-1 and int(registros[1][1:]) <12:
           		
-                    if int(registros[2][1:])%4==0 and int(registros[2][1:]) < 40:
+                    if int(registros[2][1:])%4==0 and int(registros[2][1:]) < 36:
             		
                         valorregistro=self.registro[registros[0]]
                         direccionRam= self.registro[registros[1]]
@@ -172,7 +172,7 @@ class Codigo:
                 
                     valorregistro1= int(self.registro[registros[2]],16)
 
-                    if valorregistro1%4==0 and valorregistro1<40:
+                    if valorregistro1%4==0 and valorregistro1<36:
 
                         valorregistro=self.registro[registro[0]]
                         direccionRam= self.registro[registros[1]]
