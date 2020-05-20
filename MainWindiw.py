@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtGui import QIcon, QPixmap, QMovie
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QFrame, QWidget, QPlainTextEdit, QGroupBox, QPushButton, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QFrame, QWidget, QPlainTextEdit, QGroupBox, QPushButton, QTableWidget, QTableWidgetItem, QAbstractItemView
 from Codigo import Codigo
 
 class MainWindow(QMainWindow):
@@ -16,6 +16,7 @@ class MainWindow(QMainWindow):
         self.centralwidget = QWidget(self)
         self.setCentralWidget(self.centralwidget)
 
+        self.codigo = Codigo("Codigo.txt")
         self.grupoDeComponentes()
         self.separadores()
         self.ptEjecutar.clicked.connect(self.prueba)
@@ -24,7 +25,7 @@ class MainWindow(QMainWindow):
         fileW = open("Codigo.txt","w")
         fileW.write(self.cuadroDeTexto.toPlainText())
         fileW.close()
-        self.codigo = Codigo("Codigo.txt")
+        
         self.codigo.exec_data(self.codigo.registro["lineaData"])
         print(self.codigo.ram)
 
@@ -46,7 +47,7 @@ class MainWindow(QMainWindow):
     def plainText(self, espacio):
         self.cuadroDeTexto = QPlainTextEdit(espacio)
         self.cuadroDeTexto.setGeometry(QRect(200,10,400,380))
-        self.cuadroDeTexto.setPlainText("""                            .text
+        self.cuadroDeTexto.setPlainText(""".text
 	 mov r1, 
 
 .data
@@ -77,20 +78,27 @@ Símbolo «bytekhk» no definido.
         nombreFilas=[]
         for x in range(0,16):
             nombreFilas.append("r%s"%x)
+            self.tablaRegistros.setItem(x,0,QTableWidgetItem("0x00000000"))
         self.tablaRegistros.setVerticalHeaderLabels(nombreFilas)
         nombreColumna = ["Registros"]
         self.tablaRegistros.setHorizontalHeaderLabels(nombreColumna)
         self.tablaRegistros.setAlternatingRowColors(True)
+        self.tablaRegistros.setSelectionMode(QAbstractItemView.SingleSelection)#Seleccionar una celda a la vez
 
         self.tablaMemoria = QTableWidget(espacio)
         self.tablaMemoria.setGeometry(QRect(635,10,145,380))
         self.tablaMemoria.verticalHeader().setVisible(False)
         self.tablaMemoria.setColumnCount(1)
-        self.tablaMemoria.setRowCount(18)
+        self.tablaMemoria.setRowCount(40)
+        fila=0
+        for key in self.codigo.ram:
+            self.tablaMemoria.setItem(fila,0,QTableWidgetItem(key))
+            fila+=1
         self.tablaMemoria.setAlternatingRowColors(True)
         nombreColumna = ["Memoria RAM"]
         self.tablaMemoria.setHorizontalHeaderLabels(nombreColumna)
         self.tablaMemoria.setColumnWidth(0,140)
+        self.tablaMemoria.setSelectionMode(QAbstractItemView.SingleSelection)#Seleccionar una celda a la vez
 
     
     def botones(self, espacio):
