@@ -30,7 +30,7 @@ class Codigo:
     
     def getCodigo(self):
         return self.codigo
-    
+
     def getArchivo(self):
         return self.archivo
     
@@ -113,7 +113,94 @@ class Codigo:
         return "Aqui va su codigo :')"
 
     def ldr(self,line):
-        return "Aqui va tu funcion"
+        rd = re.search(r"\[r[0-9]{1,2}\]$",cadena)                          #registro
+        val = re.search(r"=(0x\w+|0b[01]+|[0-9]+)$",cadena)                 #numero(hex,dec,bin)
+        tag = re.search(r"=\w+$",cadena)                                    #tag
+
+    if rd is not None:
+        rds = re.search(r"r[0-9]{1,2}",cadena).group()                  #Registro destino(string)
+        rbs = re.search(r"\[r[0-9]{1,2}\]",cadena).group()              #Registro base(string)
+        rbn = re.search(r"r[0-9]{1,2}",rbs).group()                     #Registro base(string, sin corchetes)
+
+        val1 = int(re.search(r"[0-9]{1,2}",rds).group())                #valor del registro destino(int)
+        val2 = int(re.search(r"[0-9]{1,2}",rbs).group())                #valor del registro base(int)
+
+        print('registros antes de la op: registro base[r5]: '+registro[rbn], 'registro destino[r10]: '+registro[rds])
+        if val1 > 7 and val2 > 7:                                             #verifica que el valor de ambos registro este entre los parametros
+            print("uno o ambos valores exede(n) el limite de los valores de registro")          #error
+        else:
+            print("los valores estan dentro de los limites del registro") 
+            itemrb = registro[rbn]                                      #valor dentro del registro rb(deberia ser una dir de mem)
+            valhex = re.search(r"0x2007",itemrb).group()                # int de la dir de mem
+            if valhex != '0x2007':                                      #verifica si es una dir de memoria(error)
+                print("no dir de mem")
+            else:                                                       #guarde el contenido de la dir de mem contenida en rb al rd
+                #item_reg = re.match(r"\w+0x[0-9]\w+",itemrb)
+                dic_reg = etiqueta.values()                              #extrae los values de el dic etiqueta
+                str_dic = str(dic_reg)                                   #convierte el dic etiqueta en string
+                val_item = re.search(r"\d"+itemrb,str_dic).group()       #extrae el valor deseado de el dic etiqueta
+                num_vals = re.search(r"^[0-9]",val_item).group()         #extrae el # de pos a evaluar 
+                num_val = int(num_vals)                                  #el num de string a int
+
+                dic_ram_keys = list(ram.keys())                                #lista de los keys de el dic ram
+                dic_ram_values = list(ram.values())                            #lista de los valores de el dic ram
+                dist_ram = len(dic_ram_keys)                                   # tamaño de el dic ram
+                ram_key_val = " "                                              # posicion de la mem ram donde se aloca el val inicial
+                store_val_rev = " "                                            # valor a almacenar en el registro destino(siendo lista y al reves)
+                        
+                for i in range (0,dist_ram):                                   #ciclo para buscar la posicion donde se encuentra alocado el key
+                    if itemrb == dic_ram_keys[i]:
+                        ram_key_val = i
+                        #print(i)
+                #print(type(ram_key_val),itemrb)
+
+
+                for f in range(0,num_val):                                       #itera y une los valores de las dir de mem
+                    store_val_rev = store_val_rev + dic_ram_values[ram_key_val+f]
+
+                #print(store_val)
+
+                lista_store_val = re.findall(r"[0-9][0]",store_val_rev)            #filtra los numeros (excluye el 0x)
+                lista_store_val.reverse()                                          # reversa la lista del valor a almacenar (al ser little endian)
+                store_val = "0x"+"".join(lista_store_val)                          #valor reversado y convertido en string
+
+                #print(store_val)                             
+                registro[rds] = store_val
+                print('registros despues de la op: registro base[r5]: '+registro[rbn], 'registro destino[r10]: '+registro[rds])
+    elif val is not None:
+        #print("puede ser un hex,dec o bin")
+        if re.search(r"0x\w+$",cadena) is not None:
+            #print("es un hex")
+            rds = re.search(r"r[0-9]{1,2}",cadena).group()                  #Registro destino(string)
+            vals = re.search(r"0x\w+$",cadena).group()                      #valor hex(string)
+            registro[rds] = vals                                            #guarde el valor hex en el registro
+            print("valor ingresado en el registri destino(hex): "+registro[rds])
+        elif re.search(r"0b[01]+$",cadena) is not None:
+            #print("es un binario")
+            rds = re.search(r"r[0-9]{1,2}",cadena).group()                  #Registro destino(string)
+            valbs = re.search(r"[01]+$",cadena).group()                     #valor bin(string)
+            valb_dec = int(valbs,2)                                         #transformacion de bit a dec(cast)
+            valb_hex = hex(valb_dec)                                        #valor dec a hex
+            registro[rds] = valb_hex                                        #guarde el valor hex en el registro
+            print("valor ingresado en el registri destino(bin): "+registro[rds])
+        elif re.search(r"[0-9]+$",cadena) is not None:
+            #print("es dec")
+            rds = re.search(r"r[0-9]{1,2}",cadena).group()                  #Registro destino(string)
+            valds = re.search(r"[0-9]+$",cadena).group()                     #valor dec(string)
+            vald = int(valds)                                                #val dec(int)
+            vald_hex = hex(vald)                                             #valor dec(hex)
+            registro[rds] = vald_hex                                        #guarde el valor hex en el registro
+            print("valor ingresado en el registri destino(dec): "+registro[rds])
+    elif tag is not None:
+        #print("es un tag")
+        rds = re.search(r"r[0-9]{1,2}",cadena).group()                  #Registro destino(string)
+        tag = re.search(r"\w+$",cadena).group()                         #nombre de la etiqueta(string)
+        val_tag = etiqueta[tag]                                         #item del key etiqueta
+        dir_tag = re.search(r"0x2007[0-9]+",val_tag).group()              #extrae la dir de mem contenida en la etiqueta
+        #print(val_tag)
+        registro[rds] = dir_tag                                         #guarde la dir de mem contenida en el tag
+        print("valor ingresado en el registri destino(tag): "+registro[rds])
+        
 
     def strp(self,line):
         if re.search("^str\s+r[0-9]{1,2}\s*,\s*\[\s*r\d{1,2}(\s*,\s*r\d{1,2}|\s*,\s*#\d{1,2})?\s*\]$",line) != None:
@@ -142,7 +229,7 @@ class Codigo:
 
                 if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 12 and int(registros[1][1:])>-1 and int(registros[1][1:]) <12:
           		
-                    if int(registros[2][1:])%4==0 and int(registros[2][1:]) < 40:
+                    if int(registros[2][1:])%4==0 and int(registros[2][1:]) < 36:
             		
                         valorregistro=self.registro[registros[0]]
                         direccionRam= self.registro[registros[1]]
@@ -172,7 +259,7 @@ class Codigo:
                 
                     valorregistro1= int(self.registro[registros[2]],16)
 
-                    if valorregistro1%4==0 and valorregistro1<40:
+                    if valorregistro1%4==0 and valorregistro1<36:
 
                         valorregistro=self.registro[registro[0]]
                         direccionRam= self.registro[registros[1]]
@@ -417,9 +504,8 @@ class Codigo:
             self.registro["descrError"] = "La etiqueta ya se incializo"
             self.registro["lineaError"] = self.obtener_llave(linea,self.codigo)
 
-#codigo = Codigo("Codigo.txt")
-#codigo.registro["r1"] = "Valor"
-#codigo.exec_data(codigo.registro["lineaData"])
-#codigo.exec_text(codigo.registro["lineaText"])
-#print(codigo.ram)
-
+codigo = Codigo("Codigo.txt")
+codigo.exec_data(codigo.registro["lineaData"])
+codigo.exec_text(codigo.registro["lineaText"])
+print(codigo.ram)
+print(codigo.etiqueta)
