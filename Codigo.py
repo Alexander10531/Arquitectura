@@ -200,8 +200,6 @@ class Codigo:
                 self.registro["descrError"] = "Error de sintaxis"
                 self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
-
-
     def obtener_direccion(self,valor = None):
         return hex(537329664 + list(self.ram.values()).index("0x00")) if valor == None else hex(537329664 + list(self.ram.values()).index(valor))
 
