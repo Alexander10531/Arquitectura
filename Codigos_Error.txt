@@ -7,3 +7,5 @@ Codigo Error = 6: La etiqueta ya se incializo
 Codigo Error = 7: No hay suficiente memoria para reservar una palabra
 Codigo Error = 8: No hay suficiente memoria para reservar un byte 
 Codigo Error = 9: No hay suficiente memoria para reservar una media palabra
+Codigo Error = 10: No se puede acceder a esos registro  
+Codigo Error = 11: La etiqueta no existe 

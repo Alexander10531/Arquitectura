@@ -1,9 +1,6 @@
-.data 
-<<<<<<< HEAD
-    Etiqueta: .word 0x10203040
+.data
+    Word1: .word 0xFFFFEFE0
 .text
+    ldr r0, =Word1
     ldr r1, [r0]
-    
-=======
-	.word 0x11213141
->>>>>>> 674ae59799b50812e304f563b8e70db6c4ef37f7
+    ldr r2, =-123
