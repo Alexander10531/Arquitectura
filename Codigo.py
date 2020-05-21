@@ -316,40 +316,40 @@ class Codigo:
                     self.registro["descrError"] = "El valor del registro no es valido"
           	        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
-        if len(registros)==3:
+            if len(registros)==3:
 
-            if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 13 and int(registros[1][1:]) >-1 and int(registros[1][1:]) < 13 and int(registros[2][1:])> -1 and int(registros[2][1:])< 13:
+                if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 13 and int(registros[1][1:]) >-1 and int(registros[1][1:]) < 13 and int(registros[2][1:])> -1 and int(registros[2][1:])< 13:
 
-                if registros[0] == registros[1]:
+                    if registros[0] == registros[1]:
                     
-                    valorRegisDestino= int(self.registro[registros[1]],16)  
-                    valorRegisFuente= int(self.registro[registros[2]],16])
-                    valorMultiplicacion= valorRegisFuente*valorRegisDestino
+                        valorRegisDestino= int(self.registro[registros[1]],16)  
+                        valorRegisFuente= int(self.registro[registros[2]],16])
+                        valorMultiplicacion= valorRegisFuente*valorRegisDestino
 
-                    self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
+                        self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
 
-                elif registros[0] == registros[2]:
+                    elif registros[0] == registros[2]:
 
-                    valorRegisDestino= int(self.registro[registros[1]],16)  
-                    valorRegisFuente= int(self.registro[registros[2]],16])
-                    valorMultiplicacion= valorRegisFuente*valorRegisDestino
+                        valorRegisDestino= int(self.registro[registros[1]],16)  
+                        valorRegisFuente= int(self.registro[registros[2]],16])
+                        valorMultiplicacion= valorRegisFuente*valorRegisDestino
 
-                    self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
+                        self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
 
-                else: 
-                    self.registro["error"] = 15
-                    self.registro["descrError"] = "Debe introducir dos registros iguales"
+                    else: 
+                        self.registro["error"] = 15
+                        self.registro["descrError"] = "Debe introducir dos registros iguales"
+          	            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+
+                else:
+                    self.registro["error"] = 12
+                    self.registro["descrError"] = "El valor del registro no es valido"
           	        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
             else:
-                self.registro["error"] = 12
-                self.registro["descrError"] = "El valor del registro no es valido"
+                self.registro["error"] = 4
+                self.registro["descrError"] = "Error de sintaxis"
           	    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-
-        else:
-            self.registro["error"] = 4
-            self.registro["descrError"] = "Error de sintaxis"
-          	self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
 
     def obtener_direccion(self,valor = None):
