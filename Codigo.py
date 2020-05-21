@@ -238,7 +238,7 @@ class Codigo:
 
                 if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 13 and int(registros[1][1:])>-1 and int(registros[1][1:]) <13:
           		
-                    if int(registros[2][1:])%4==0 and int(registros[2][1:]) < 36:
+                    if int(registros[2][1:])%4==0 and int(registros[2][1:]) < 37:
             		
                         valorregistro=self.registro[registros[0]]
                         direccionRam= self.registro[registros[1]]
@@ -268,7 +268,7 @@ class Codigo:
                 
                     valorregistro1= int(self.registro[registros[2]],16)
 
-                    if valorregistro1%4==0 and valorregistro1<36:
+                    if valorregistro1%4==0 and valorregistro1<37:
                         # Alexander was here
                         valorregistro=self.registro[registros[0]]
                         direccionRam= self.registro[registros[1]]
@@ -297,24 +297,24 @@ class Codigo:
                 self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
     def mul(self,line):
-    if re.search("^mul\s+r\d{1,2}\s*,\s*(r\d{1,2}\s*|r\d{1,2}\s*,\s*r\d{1,2}\s*)?$", line) != None:
+        if re.search("^mul\s+r\d{1,2}\s*,\s*(r\d{1,2}\s*|r\d{1,2}\s*,\s*r\d{1,2}\s*)?$", line) != None:
        
-        registros = re.findall("r\d{1,2}",line)
+            registros = re.findall("r\d{1,2}",line)
 
-        if len(registros)==2:
+            if len(registros)==2:
 
-            if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 13 and int(registros[1][1:]) >-1 and int(registros[1][1:]) < 13:
+                if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 13 and int(registros[1][1:]) >-1 and int(registros[1][1:]) < 13:
 
-                valorRegisDestino= int(self.registro[registros[0]],16)  
-                valorRegisFuente= int(self.registro[registros[1]],16)
-                valorMultiplicacion= valorRegisFuente*valorRegisDestino
+                    valorRegisDestino= int(self.registro[registros[0]],16)  
+                    valorRegisFuente= int(self.registro[registros[1]],16)
+                    valorMultiplicacion= valorRegisFuente*valorRegisDestino
 
-                self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
+                    self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
 
-            else:
-                self.registro["error"] = 12
-                self.registro["descrError"] = "El valor del registro no es valido"
-          	    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+                else:
+                    self.registro["error"] = 12
+                    self.registro["descrError"] = "El valor del registro no es valido"
+          	        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
         if len(registros)==3:
 
