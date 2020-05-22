@@ -88,7 +88,6 @@ class Codigo:
         lineaRegis=re.search(r"mov r([0-9]|1[0-5]), r([0-9]|1[0-5])\s*", line)
    
         registro=re.search(r"r([0-9]{1,2})", line).group() #para extraer el registro usado en la función
-        print(registro)
         if lineaConstDec != None: 
             constante=re.search(r"#([0-9]{1,3})", line).group().split("#") #para extraer la constante
             self.registro[registro]='0x{0:0{1}X}'.format(int(constante[1]),8)
@@ -314,7 +313,7 @@ class Codigo:
                 else:
                     self.registro["error"] = 12
                     self.registro["descrError"] = "El valor del registro no es valido"
-          	        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+                    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
             if len(registros)==3:
 
@@ -323,7 +322,7 @@ class Codigo:
                     if registros[0] == registros[1]:
                     
                         valorRegisDestino= int(self.registro[registros[1]],16)  
-                        valorRegisFuente= int(self.registro[registros[2]],16])
+                        valorRegisFuente= int(self.registro[registros[2]],16)
                         valorMultiplicacion= valorRegisFuente*valorRegisDestino
 
                         self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
@@ -331,7 +330,7 @@ class Codigo:
                     elif registros[0] == registros[2]:
 
                         valorRegisDestino= int(self.registro[registros[1]],16)  
-                        valorRegisFuente= int(self.registro[registros[2]],16])
+                        valorRegisFuente= int(self.registro[registros[2]],16)
                         valorMultiplicacion= valorRegisFuente*valorRegisDestino
 
                         self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
@@ -339,18 +338,17 @@ class Codigo:
                     else: 
                         self.registro["error"] = 15
                         self.registro["descrError"] = "Debe introducir dos registros iguales"
-          	            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+                        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
                 else:
                     self.registro["error"] = 12
                     self.registro["descrError"] = "El valor del registro no es valido"
-          	        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+                    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
             else:
                 self.registro["error"] = 4
                 self.registro["descrError"] = "Error de sintaxis"
-          	    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
     def obtener_direccion(self,valor = None):
         return hex(537329664 + list(self.ram.values()).index("0x00")) if valor == None else hex(537329664 + list(self.ram.values()).index(valor))
@@ -572,8 +570,3 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
-print(codigo.ram)
-print('--------------------------------------------------------')
-print(codigo.registro)
-print('--------------------------------------------------------')
-print(codigo.etiqueta)
