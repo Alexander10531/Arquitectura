@@ -6,7 +6,7 @@ class Codigo:
         # Registros, tambien se encuentran los valores lineaText, lineaData, error, descrError que se usan para el control del programa
         self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"0x00000000","r1":"0x00000000","r2":"0x00000000","r3":"0x00000000","r4": "0x00000000","r5":"0x00000000","r6":"0x00000000","r7":"0x00000000","r8":"0x00000000","r9":"0x00000000","r10":"0x00000000","r11":"0x00000000","r12":"0x00000000","r13":"0x00000000","r14":"0x00000000","r15":"0x00000000",} 
         # Diccionario de instrucciones en las que se encuentran los nombres de las instrucciones y estan asociados a las funciones
-        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte, "neg":self.neg, "mul":self.mul, "eor":self.eor}
+        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte, "neg":self.neg, "mul":self.mul, "eor":self.eor,"orr":self.orr,self.andd}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
         self.etiqueta = {} 
@@ -94,6 +94,39 @@ class Codigo:
                 self.registro["error"] = 12
                 self.registro["descrError"] = "El valor del registro no es valido"
                 self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+        else:
+            self.registro["error"] = 4 
+            self.registro["descrError"] = "Error de sintaxis"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+#Operaciones lógicas
+
+    def andd(self, line):
+        if re.search(r"^and\s*r[0-7],\s*r[0-7]\s*$", line) != None:
+            rd=re.search(r"r[0-7]", line).group()
+            rs=re.search(r",\s*r[0-7]", line).group().split(", ")
+            valrd=bin(int(str(self.registro[rd]), 16))[2:]
+            valrs=bin(int(str(self.registro[rs[1]]), 16))[2:]
+            self.registro[rd]='0x{0:0{1}X}'.format(int(str(valrd and valrs), 2),8)
+        elif re.search(r"(^orr\s*r([8-9]|1[0-5]),\s*r[0-7]\s*$)|(^orr\s*r[0-7],\s*r([8-9]|1[0-5])\s*$)", line) != None:
+            self.registro["error"] = 10 
+            self.registro["descrError"] = "No se puede acceder a esos registro"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+        else:
+            self.registro["error"] = 4 
+            self.registro["descrError"] = "Error de sintaxis"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+
+    def orr(self, line):
+        if re.search(r"^orr\s*r[0-7],\s*r[0-7]\s*$", line) != None:
+            rd=re.search(r"r[0-7]", line).group()
+            rs=re.search(r",\s*r[0-7]", line).group().split(", ")
+            valrd=bin(int(str(self.registro[rd]), 16))[2:]
+            valrs=bin(int(str(self.registro[rs[1]]), 16))[2:]
+            self.registro[rd]='0x{0:0{1}X}'.format(int(str(valrd or valrs), 2),8)
+        elif re.search(r"(^orr\s*r([8-9]|1[0-5]),\s*r[0-7]\s*$)|(^orr\s*r[0-7],\s*r([8-9]|1[0-5])\s*$)", line) != None:
+            self.registro["error"] = 10 
+            self.registro["descrError"] = "No se puede acceder a esos registro"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
         else:
             self.registro["error"] = 4 
             self.registro["descrError"] = "Error de sintaxis"
@@ -605,5 +638,7 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
+#print(codigo.ram)
+#print(codigo.registro)
+print(codigo.orr("orr r1, r2"))
 print(codigo.registro)
-#eor rd, rs»:rd←rd EOR rs
