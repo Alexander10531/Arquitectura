@@ -25,9 +25,10 @@ class MainWindow(QMainWindow):
         fileW = open("Codigo.txt","w")
         fileW.write(self.cuadroDeTexto.toPlainText())
         fileW.close()
-        
+        self.codigo = Codigo("Codigo.txt ")
         self.codigo.exec_data(self.codigo.registro["lineaData"])
         print(self.codigo.ram)
+        
 
     def fondoMainWindow(self):
         fondo = QLabel(self)
@@ -47,11 +48,7 @@ class MainWindow(QMainWindow):
     def plainText(self, espacio):
         self.cuadroDeTexto = QPlainTextEdit(espacio)
         self.cuadroDeTexto.setGeometry(QRect(200,10,400,380))
-        self.cuadroDeTexto.setPlainText(""".text
-	 mov r1, 
-
-.data
-	.word r1, #255
+        self.cuadroDeTexto.setPlainText("""
 
         """)
         self.resultado = QPlainTextEdit(espacio)

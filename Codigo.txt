@@ -1,3 +1,2 @@
-.text 
-mov r1, #12
-        
+.data 
+	.word 0x10203040
