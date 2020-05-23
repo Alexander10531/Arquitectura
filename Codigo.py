@@ -6,7 +6,7 @@ class Codigo:
         # Registros, tambien se encuentran los valores lineaText, lineaData, error, descrError que se usan para el control del programa
         self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"0x00000000","r1":"0x00000000","r2":"0x00000000","r3":"0x00000000","r4": "0x00000000","r5":"0x00000000","r6":"0x00000000","r7":"0x00000000","r8":"0x00000000","r9":"0x00000000","r10":"0x00000000","r11":"0x00000000","r12":"0x00000000","r13":"0x00000000","r14":"0x00000000","r15":"0x00000000",} 
         # Diccionario de instrucciones en las que se encuentran los nombres de las instrucciones y estan asociados a las funciones
-        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte}
+        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte, "neg":self.neg}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
         self.etiqueta = {} 
@@ -78,6 +78,23 @@ class Codigo:
             return ((int(str(normal), 2))+1)*-1
         else:
             return int(ca2[1],16)
+
+    def neg(self, line):
+        if re.search(r"^neg\s*r\d+\s*,\s*r\d+$",line):
+            lista = re.findall(r"[0-7]",line)
+            if len(lista) == 2:
+                lista[1] = -self.ca2_decimal(self.registro["r" + str(lista[1])])
+                lista[1] = hex(int(self.ca2(lista[1],32),2))
+                lista[1] = "0x" + (10 - len(lista[1])) * "0" + lista[1][2:].upper()
+                self.registro["r" +  lista[0]] = lista[1]
+            else:
+                self.registro["error"] = 12
+                self.registro["descrError"] = "El valor del registro no es valido"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+        else:
+            self.registro["error"] = 4 
+            self.registro["descrError"] = "Error de sintaxis"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
     def mov(self,line):
         #evalúa la sintaxis de la función mov con un registro y una constante
@@ -570,3 +587,5 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
+print(codigo.ram)
+print(codigo.registro)

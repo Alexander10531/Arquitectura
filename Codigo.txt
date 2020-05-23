@@ -1,2 +1,5 @@
 .data 
 	.word 0x10203040
+.text 
+	ldr r1, = -0x11
+	neg r4, r1
