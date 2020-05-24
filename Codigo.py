@@ -6,7 +6,7 @@ class Codigo:
         # Registros, tambien se encuentran los valores lineaText, lineaData, error, descrError que se usan para el control del programa
         self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"0x00000000","r1":"0x00000000","r2":"0x00000000","r3":"0x00000000","r4": "0x00000000","r5":"0x00000000","r6":"0x00000000","r7":"0x00000000","r8":"0x00000000","r9":"0x00000000","r10":"0x00000000","r11":"0x00000000","r12":"0x00000000","r13":"0x00000000","r14":"0x00000000","r15":"0x00000000",} 
         # Diccionario de instrucciones en las que se encuentran los nombres de las instrucciones y estan asociados a las funciones
-        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte, "neg":self.neg}
+        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte, "neg":self.neg, "mul":self.mul, "eor":self.eor,"orr":self.orr,"andd": self.andd}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
         self.etiqueta = {} 
@@ -80,13 +80,16 @@ class Codigo:
             return int(ca2[1],16)
 
     def neg(self, line):
-        if re.search(r"^neg\s*r\d+\s*,\s*r\d+$",line):
-            lista = re.findall(r"[0-7]",line)
+        if re.search(r"^neg\s*r\d{1,2}\s*,\s*r\d{1,2}$",line):
+            f = lambda x: x if int(x) < 8 else None
+            lista = list(filter(None,list(map(f,re.findall(r"\d{1,2}",line)))))
+            print(lista)
             if len(lista) == 2:
                 lista[1] = -self.ca2_decimal(self.registro["r" + str(lista[1])])
                 lista[1] = hex(int(self.ca2(lista[1],32),2))
                 lista[1] = "0x" + (10 - len(lista[1])) * "0" + lista[1][2:].upper()
                 self.registro["r" +  lista[0]] = lista[1]
+                del(lista)
             else:
                 self.registro["error"] = 12
                 self.registro["descrError"] = "El valor del registro no es valido"
@@ -96,32 +99,91 @@ class Codigo:
             self.registro["descrError"] = "Error de sintaxis"
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
+#Operaciones lógicas
+
+    def andd(self, line):
+        if re.search(r"^and\s*r[0-7],\s*r[0-7]\s*$", line) != None:
+            rd=re.search(r"r[0-7]", line).group()
+            rs=re.search(r",\s*r[0-7]", line).group().split()
+            valrd=int(str(self.registro[rd]), 16)
+            valrs=int(str(self.registro[rs[1]]), 16)
+            self.registro[rd]='0x{0:0{1}X}'.format(int(valrd & valrs),8)
+        elif re.search(r"(^and\s*r([8-9]|1[0-5]),\s*r[0-7]\s*$)|(^and\s*r[0-7],\s*r([8-9]|1[0-5])\s*$)", line) != None:
+            self.registro["error"] = 10 
+            self.registro["descrError"] = "No se puede acceder a esos registro"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+        else:
+            self.registro["error"] = 4 
+            self.registro["descrError"] = "Error de sintaxis"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+
+    def orr(self, line):
+        if re.search(r"^orr\s*r[0-7],\s*r[0-7]\s*$", line) != None:
+            rd=re.search(r"r[0-7]", line).group()
+            rs=re.search(r",\s*r[0-7]", line).group().split()
+            valrd=int(str(self.registro[rd]), 16)
+            valrs=int(str(self.registro[rs[1]]), 16)
+            self.registro[rd]='0x{0:0{1}X}'.format(int(valrd | valrs),8)
+        elif re.search(r"(^orr\s*r([8-9]|1[0-5]),\s*r[0-7]\s*$)|(^orr\s*r[0-7],\s*r([8-9]|1[0-5])\s*$)", line) != None:
+            self.registro["error"] = 10 
+            self.registro["descrError"] = "No se puede acceder a esos registro"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+        else:
+            self.registro["error"] = 4 
+            self.registro["descrError"] = "Error de sintaxis"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+
     def mov(self,line):
         #evalúa la sintaxis de la función mov con un registro y una constante
-        lineaConstDec=re.search(r"mov r([0-9]|1[0-5]), #(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-5]{2}))\s*$", line)
-        lineaConstBin=re.search(r"mov r([0-9]|1[0-5]), #0b([0-1]{1,8})\s*$", line)
-        lineaConstHex=re.search(r"mov r([0-9]|1[0-5]), #(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})\s*$", line)
+        lineaConstDec=re.search(r"^mov\s*r([0-9]|1[0-5]),\s*#(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-5]{2}))\s*$", line)
+        lineaConstBin=re.search(r"^mov\s*r([0-9]|1[0-5]),\s*#0b([0-1]{1,8})\s*$", line)
+        lineaConstHex=re.search(r"^mov\s*r([0-9]|1[0-5]),\s*#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})\s*$", line)
         #evalúa la sintaxis de la función mov con dos registros
-        lineaRegis=re.search(r"mov r([0-9]|1[0-5]), r([0-9]|1[0-5])\s*", line)
-   
-        registro=re.search(r"r([0-9]{1,2})", line).group() #para extraer el registro usado en la función
-        if lineaConstDec != None: 
-            constante=re.search(r"#([0-9]{1,3})", line).group().split("#") #para extraer la constante
-            self.registro[registro]='0x{0:0{1}X}'.format(int(constante[1]),8)
-        elif lineaConstBin != None:
-            constante=re.search(r"#0b([0-1]{1,8})", line).group().split("0b")
-            self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),2),8) 
-        elif lineaConstHex != None:
-            constante=re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})", line).group().split("0x") or re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})",line).group().split("0X")
-            self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8)
-        elif lineaRegis != None: 
-            registro2=re.search(r", r([0-9]{1,2})", line).group().split(" ") #para extraer el segundo registro usado en la función
-            self.registro[registro2[1]]=self.registro[registro]
+        lineaRegis=re.search(r"^mov\s*r([0-9]|1[0-5]),\s*r([0-9]|1[0-5])\s*", line)
+        if re.search(r"r([0-7])", line) != None: 
+            registro=re.search(r"r[0-7]", line).group() #para extraer el registro usado en la función
+            if lineaConstDec != None: 
+                constante=re.search(r"#([0-9]{1,3})", line).group().split("#") #para extraer la constante
+                self.registro[registro]='0x{0:0{1}X}'.format(int(constante[1]),8)
+            elif lineaConstBin != None:
+                constante=re.search(r"#0b([0-1]{1,8})", line).group().split("0b")
+                self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),2),8) 
+            elif lineaConstHex != None:
+                constante=re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})", line).group().split("0x") or re.search(r"#(0X|0x)([A-F0-9]{1,2}|[a-f0-9]{1,2})",line).group().split("0X")
+                self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8)
+            elif lineaRegis != None: 
+                if re.search(r",\s*r[0-7]$", line) != None:
+                    registro2=re.search(r",\s*r[0-7]", line).group().split() #para extraer el segundo registro usado en la función
+                    self.registro[registro2[1]]=self.registro[registro]
+                else: 
+                    self.registro["error"] = 10 
+                    self.registro["descrError"] = "No se puede acceder a esos registro"
+                    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+            else:
+                self.registro["error"] = 4
+                self.registro["descrError"] = "Error de sintaxis"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+        else:
+            self.registro["error"] = 10 
+            self.registro["descrError"] = "No se puede acceder a esos registro"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+    
+    def eor(self,line):
+        
+        if re.search(r"^eor\s+r\d{1,2}\s*,\s*r\d{1,2}$",line) != None:
+            f = lambda x: x if int(x) < 8 else None
+            lista = list(filter(None,list(map(f,re.findall(r"\d{1,2}",line)))))
+            if len(lista) == 2:
+                pass
+            else:
+                self.registro["error"] = 12
+                self.registro["descrError"] = "El valor del registro no es valido"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
         else:
             self.registro["error"] = 4
             self.registro["descrError"] = "Error de sintaxis"
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-    
+
     def add(self,line):
         reg = re.findall(r"r[0-9]\s*|r[0-9]|#[0-9]*",line)
         rd = reg[0]     #registro destino
@@ -360,7 +422,6 @@ class Codigo:
         if re.search("^mul\s+r\d{1,2}\s*,\s*(r\d{1,2}\s*|r\d{1,2}\s*,\s*r\d{1,2}\s*)?$", line) != None:
        
             registros = re.findall("r\d{1,2}",line)
-
             if len(registros)==2:
 
                 if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 13 and int(registros[1][1:]) >-1 and int(registros[1][1:]) < 13:
