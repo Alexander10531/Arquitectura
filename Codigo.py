@@ -123,7 +123,51 @@ class Codigo:
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
     
     def add(self,line):
-        print("add")
+        reg = re.findall(r"r[0-9]\s*|r[0-9]|#[0-9]*",line)
+        rd = reg[0]     #registro destino
+        rs = reg[1]     #rs
+        rn = reg[2]     #rn (puede ser que sea un registro o un valor inmediato)
+
+        reg = re.search(r"r[0-9]",rn)   #almacena un registro
+        d_inm = re.search(r"[0-9]",rn)  #almacena un dato inmediato
+            
+        if reg is not None:            #entra si es un registro
+
+                val_rd = int(self.registro[rd],16)      #valor del registro destino(int)
+                val_rs = int(self.registro[rs],16)      #valor del rs(int)
+                val_rn = int(self.registro[rn],16)      #valor del rn(int)
+
+                val_rd = val_rs + val_rn           #valor de la sumatoria (int)
+
+                val_rd_hex = hex(val_rd)            #valor de la sumatoria en hexadeximal
+                val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group() #eliminando el "0x" generado por python
+                sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean    #añadiendo el 0x000000
+                self.registro[rd] = sum_fin     #asignando el valor al registro
+
+                print(self.registro[rd])
+
+        elif d_inm is not None:     #si es un dato inmediato
+
+            if int(d_inm.group()) <= 2**31-1 and int(d_inm.group()) >= -2**31:   #verifica si el valor esta dentro del rango   
+                
+                val_rd = int(self.registro[rd],16)      #valor del registro destino (int)
+                val_rs = int(self.registro[rs],16)      #valor del registro rs  (int)
+                d_inm_int = int(d_inm.group())          #valor del dato inmediato   (int)
+                
+                val_rd = val_rs +d_inm_int              #valor de la suma (int)
+
+                val_rd_hex = hex(val_rd)                #valor de la suma en hex
+                val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group() #eliminando el "0x" generado por python
+                sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean    #añadiendo el 0x000000
+                self.registro[rd] = sum_fin #asignando el valor al registro
+
+                print(self.registro[rd])
+
+            else:
+                self.registro["error"] = 5
+                self.registro["descrError"] = "El valor no puede almacenarse en k = 32"                 
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+        #print("add")
 
     def sub(self,line):
         return "Aqui va su codigo :')"
