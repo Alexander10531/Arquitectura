@@ -25,10 +25,10 @@ class MainWindow(QMainWindow):
         fileW = open("Codigo.txt","w")
         fileW.write(self.cuadroDeTexto.toPlainText())
         fileW.close()
-        self.codigo = Codigo("Codigo.txt ")
+        self.codigo = Codigo("Codigo.txt")
         self.codigo.exec_data(self.codigo.registro["lineaData"])
         print(self.codigo.ram)
-        
+        print(self.codigo.registro)
 
     def fondoMainWindow(self):
         fondo = QLabel(self)

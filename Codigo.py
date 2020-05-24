@@ -99,7 +99,6 @@ class Codigo:
             self.registro["descrError"] = "Error de sintaxis"
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
-#Operaciones lógicas
     def andd(self, line):
         if re.search(r"^and\s*r[0-7],\s*r[0-7]\s*$", line) != None:
             rd=re.search(r"r[0-7]", line).group()
@@ -169,15 +168,22 @@ class Codigo:
     
     def eor(self,line):
         
-        if re.search(r"^eor\s+r\d{1,2}\s*,\s*r\d{1,2}$",line) != None:
+        if re.search(r"^eor\s+r\d+\s*,\s*r\d+$",line) != None:
+            lista = re.findall("\d+",line)
             f = lambda x: x if int(x) < 8 else None
-            lista = list(filter(None,list(map(f,re.findall(r"\d{1,2}",line)))))
+            lista = list(filter(None,list(map(f,lista))))
             if len(lista) == 2:
-                pass
+                rd = int(self.registro["r" + str(lista[0])],16)
+                rs = int(self.registro["r" + str(lista[1])],16)
+                rd = hex(int(bin(rd ^ rs),2))
+                self.registro["r" + str(lista[0])] = "0x" + (10 - len(rd))*"0" + rd[2:].upper()
+                del(rd)
+                del(rs)
+                del(lista)
             else:
-                self.registro["error"] = 12
-                self.registro["descrError"] = "El valor del registro no es valido"
-                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+                self.registro["error"] = 10
+                self.registro[""] = "No se puede acceder a esos registro"                 
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo) 
         else:
             self.registro["error"] = 4
             self.registro["descrError"] = "Error de sintaxis"
@@ -694,5 +700,4 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
-print(codigo.orr("orr r1, r2"))
 print(codigo.registro)
