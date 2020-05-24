@@ -424,11 +424,12 @@ class Codigo:
             registros = re.findall("r\d{1,2}",line)
             if len(registros)==2:
 
-                if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 13 and int(registros[1][1:]) >-1 and int(registros[1][1:]) < 13:
+                if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 8 and int(registros[1][1:]) >-1 and int(registros[1][1:]) < 8:
 
-                    valorRegisDestino= int(self.registro[registros[0]],16)  
-                    valorRegisFuente= int(self.registro[registros[1]],16)
+                    valorRegisDestino= codigo.ca2_decimal(self.registro[registros[0]])  
+                    valorRegisFuente= codigo.ca2_decimal(self.registro[registros[1]])
                     valorMultiplicacion= valorRegisFuente*valorRegisDestino
+                    valorMultiplicacion= int(codigo.ca2(valorMultiplicacion,32),2)
 
                     self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
 
@@ -439,21 +440,23 @@ class Codigo:
 
             if len(registros)==3:
 
-                if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 13 and int(registros[1][1:]) >-1 and int(registros[1][1:]) < 13 and int(registros[2][1:])> -1 and int(registros[2][1:])< 13:
+                if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 8 and int(registros[1][1:]) >-1 and int(registros[1][1:]) < 8 and int(registros[2][1:])> -1 and int(registros[2][1:])< 8:
 
                     if registros[0] == registros[1]:
                     
-                        valorRegisDestino= int(self.registro[registros[1]],16)  
-                        valorRegisFuente= int(self.registro[registros[2]],16)
+                        valorRegisDestino= codigo.ca2_decimal(self.registro[registros[1]])  
+                        valorRegisFuente= codigo.ca2_decimal(self.registro[registros[2]])
                         valorMultiplicacion= valorRegisFuente*valorRegisDestino
+                        valorMultiplicacion= int(codigo.ca2(valorMultiplicacion,32),2)
 
                         self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
 
                     elif registros[0] == registros[2]:
 
-                        valorRegisDestino= int(self.registro[registros[1]],16)  
-                        valorRegisFuente= int(self.registro[registros[2]],16)
+                        valorRegisDestino= codigo.ca2_decimal(self.registro[registros[1]])  
+                        valorRegisFuente= codigo.ca2_decimal(self.registro[registros[2]])
                         valorMultiplicacion= valorRegisFuente*valorRegisDestino
+                        valorMultiplicacion= int(codigo.ca2(valorMultiplicacion,32),2)
 
                         self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
 
