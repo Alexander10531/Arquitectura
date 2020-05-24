@@ -99,7 +99,6 @@ class Codigo:
             self.registro["descrError"] = "Error de sintaxis"
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 #Operaciones lógicas
-
     def andd(self, line):
         if re.search(r"^and\s*r[0-7],\s*r[0-7]\s*$", line) != None:
             rd=re.search(r"r[0-7]", line).group()
@@ -638,7 +637,5 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
-#print(codigo.ram)
-#print(codigo.registro)
 print(codigo.orr("orr r1, r2"))
 print(codigo.registro)
