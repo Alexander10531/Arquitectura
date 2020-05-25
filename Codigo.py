@@ -300,7 +300,7 @@ class Codigo:
                                 ram_key_val = i
                         for f in range(0,num_val):                                       #itera y une los valores de las dir de mem
                             store_val_rev = store_val_rev + dic_ram_values[ram_key_val+f]
-                        lista_store_val = re.findall(r"[0-9][0]",store_val_rev)            #filtra los numeros (excluye el 0x)
+                        lista_store_val = re.findall(r"(?!0x|x)([\w]{2})",store_val_rev)            #filtra los numeros (excluye el 0x)
                         lista_store_val.reverse()                                          # reversa la lista del valor a almacenar (al ser little endian)
                         store_val = "0x"+"".join(lista_store_val)                          #valor reversado y convertido en string                             
                         self.registro[rds] = store_val
@@ -726,3 +726,4 @@ codigo.exec_text(codigo.registro["lineaText"])
 print(codigo.registro)
 print("------------------------------------------")
 print(codigo.ram)
+print(codigo.etiqueta)
