@@ -1,4 +1,4 @@
-.data 
-	word1: .word 0x10203040
-.text 
-     
+.text
+	mov r1, #12
+	ldr r2, =-12
+	eor r1, r1
