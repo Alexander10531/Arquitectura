@@ -6,7 +6,7 @@ class Codigo:
         # Registros, tambien se encuentran los valores lineaText, lineaData, error, descrError que se usan para el control del programa
         self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"0x00000000","r1":"0x00000000","r2":"0x00000000","r3":"0x00000000","r4": "0x00000000","r5":"0x00000000","r6":"0x00000000","r7":"0x00000000","r8":"0x00000000","r9":"0x00000000","r10":"0x00000000","r11":"0x00000000","r12":"0x00000000","r13":"0x00000000","r14":"0x00000000","r15":"0x00000000",} 
         # Diccionario de instrucciones en las que se encuentran los nombres de las instrucciones y estan asociados a las funciones
-        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte, "neg":self.neg, "mul":self.mul, "eor":self.eor,"orr":self.orr,"and": self.andd, "ldrb":self.ldrb, "sxtb":self.sxtb}
+        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte, "neg":self.neg, "mul":self.mul, "eor":self.eor,"orr":self.orr,"and": self.andd,"ldrb":self.ldrb,"sxtb":self.sxtb}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
         self.etiqueta = {} 
@@ -167,103 +167,141 @@ class Codigo:
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
     def ldrb(self,line):
-            if re.search(r"^ldrb\s*r(\d|1[0-5]),\s*=((0x|0X)[A-Fa-f\d]{2}|0b[01]{1,8}|([0-9]{1,2}|1[0-9]{2}|2[0-5]{5})|\w+)\s*$", line) != None:
-                if re.search(r"r[0-7]", line) != None:
-                    registro=re.search(r"r[0-7]", line).group()
-                    if re.search(r"=(0x|0X)[A-Fa-f\d]{1,2}", line) != None:
-                        constante=re.search(r"=(0x|0X)[A-Fa-f\d]{1,2}",line).group().lower().split("0x")
-                        self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8)
-                    elif re.search(r"=0b[01]{1,8}", line) != None:
-                        constante=re.search(r"=0b[01]{1,8}", line).group().split("0b")
-                        self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),2),8)
-                    elif re.search(r"=\d{1,3}", line) != None:
-                        constante=re.search(r"=\d{1,3}", line).group().split("=")
-                        self.registro[registro]='0x{0:0{1}X}'.format(int(constante[1]),8)
+        if re.search(r"^ldrb\s*r(\d|1[0-5]),\s*=((0x|0X)[A-Fa-f\d]{2}|0b[01]{1,8}|([0-9]{1,2}|1[0-9]{2}|2[0-5]{5})|\-\d{1,3}|\w+)\s*$", line) != None:
+            print(line)
+            if re.search(r"r[0-7]", line) != None:
+                registro=re.search(r"r[0-7]", line).group()
+                if re.search(r"=(0x|0X)[A-Fa-f\d]{1,2}", line) != None:
+                    constante=re.search(r"=(0x|0X)[A-Fa-f\d]{1,2}",line).group().lower().split("0x")
+                    self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),16),8)
+                elif re.search(r"=0b[01]{1,8}", line) != None:
+                    constante=re.search(r"=0b[01]{1,8}", line).group().split("0b")
+                    self.registro[registro]='0x{0:0{1}X}'.format(int(str(constante[1]),2),8)
+                elif re.search(r"=\d{1,3}", line) != None:
+                    constante=re.search(r"=\d{1,3}", line).group().split("=")
+                    self.registro[registro]='0x{0:0{1}X}'.format(int(constante[1]),8)
+                elif re.search(r"=\-\d{1,3}", line) !=None:
+                    constante=re.search(r"=\-\d{1,3}", line).group().split("=")
+                    if -129 < int(constante[1]) < 0:
+                        value=self.ca2(int(constante[1]),8)
+                        value=value.split("0b")
+                        self.registro[registro]='0x{0:0{1}X}'.format(int(str(value[1]),2),8)
                     else:
-                        etiqueta=re.search(r"=\w+", line).group().split("=")
-                        direccion = self.etiqueta[etiqueta[1]].split("10x")
-                        self.registro[registro]='0x{}'.format(direccion[1])
+                        self.registro["error"] = 5
+                        self.registro["descrError"] = "Codigo Error = 5: El valor no puede almacenarse en k = 8"
+                        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
                 else:
-                    self.registro["error"] = 10
-                    self.registro["descrError"] = "No se puede acceder a esos registro"
-                    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-            elif re.search(r"^ldrb\s*r(\d|1[0-5]),\s*\[\s*(r(\d|1[0-5])|r(\d|1[0-5]),\s*((r(\d|1[0-5]))|#((\d{1,2})|0x[A-Fa-f\d]{1,2}|0b[01]{1,8})))\s*\]\s*$", line) != None:
-                if re.search(r"r[0-7]",line) !=None:
-                    registro=re.search(r"r[0-7]", line).group()
-                    if re.search(r"(,\s*\[\s*r([0-7])\s*\])|(,\s*\[\s*(r([0-7]),\s*#(0|0x[0]{1,2}|0b[0]{1,8}))\s*\])", line) != None:
-                        registro2=re.search(r",\s*\[\s*r([0-7])\s*", line).group().split("[")
-                        registro2=registro2[1].split()
-                        value=self.ram[self.registro[registro2[0][-2:]]].split("x")
-                        self.registro[registro]='0x000000{}'.format(value[1])
-                    elif re.search(r",\s*\[\s*r([0-7]),\s*#((\d{1,2})|0x[A-Fa-f\d]{1,2}|0b[01]{1,8})\s*\]", line) != None:
-                        registro2=re.search(r",\s*\[\s*r([0-7])", line).group().split("[")
-                        registro2=registro2[1].split()
-
-                        if re.search(r"#(\d{1,2})$", line) != None:
-                            constante=re.search(r"#(\d{1,2})$", line).group().split("#")
-                            if 0<int(constante[1])<32:
-                                memoria=hex(int(self.registro[registro2[0]][-2:])+int(constante[1])).split("0x")
+                    etiqueta=re.search(r"=\w+", line).group().split("=")
+                    direccion = self.etiqueta[etiqueta[1]].split("10x")
+                    self.registro[registro]='0x{}'.format(direccion[1])
+            else:
+                self.registro["error"] = 10
+                self.registro["descrError"] = "No se puede acceder a esos registro"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+        elif re.search(r"^ldrb\s*r(\d|1[0-5]),\s*\[\s*(r(\d|1[0-5])|r(\d|1[0-5]),\s*((r(\d|1[0-5]))|#((\d{1,2})|0x[A-Fa-f\d]{1,2}|0b[01]{1,8})))\s*\]\s*$", line) != None:
+            if re.search(r"r[0-7]",line) !=None:
+                registro=re.search(r"r[0-7]", line).group()
+                if re.search(r"(,\s*\[\s*r([0-7])\s*\])|(,\s*\[\s*(r([0-7]),\s*#(0|0x[0]{1,2}|0b[0]{1,8}))\s*\])", line) != None:
+                    registro2=re.search(r",\s*\[\s*r([0-7])\s*", line).group().split("[")
+                    registro2=registro2[1].split()
+                    value=self.ram[self.registro[registro2[0][-2:]]].split("x")
+                    self.registro[registro]='0x000000{}'.format(value[1])
+                elif re.search(r",\s*\[\s*r([0-7]),\s*#((\d{1,2})|0x[A-Fa-f\d]{1,2}|0b[01]{1,8})\s*\]", line) != None:
+                    registro2=re.search(r",\s*\[\s*r([0-7])", line).group().split("[")
+                    registro2=registro2[1].split()
+                    if re.search(r"#(\d{1,2})\s*\]$", line) != None:
+                        print(line)
+                        constante=re.search(r"#(\d{1,2})\s*\]$", line).group().split("#")
+                        constante=constante[1].split("]")
+                        print(constante)
+                        if 0<int(constante[0])<32:
+                            if hex(int(self.registro[registro2[0]][-2:])+int(constante[0])) > "0x29":
+                                self.registro[registro]='0x00000000'
+                            else:
+                                memoria=hex(int(self.registro[registro2[0]][-2:])+int(constante[0])).split("0x")
                                 value=self.ram['0x2007{0:0{1}X}'.format(int(memoria[1]),4)].split("0x")
                                 self.registro[registro]='0x000000{}'.format(value[1])
-                            else:
-                                self.registro["error"] = 13
-                                self.registro["descrError"] = "El valor del offset no es valido"
-                                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+                        else:
+                            self.registro["error"] = 13
+                            self.registro["descrError"] = "El valor del offset no es valido"
+                            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
-                        elif re.search(r"#0b[01]{1,8}", line) != None:
-                            constante=re.search(r"#0b[01]{1,8}", line).group().split("0b")
-                            if 0<int(constante[1],2)<32:
+                    elif re.search(r"#0b[01]{1,8}", line) != None:
+                        constante=re.search(r"#0b[01]{1,8}", line).group().split("0b")
+                        if 0<int(constante[1],2)<32:
+                            if hex(int(self.registro[registro2[0]][-2:])+int(constante[1],2)) > "0x29":
+                                self.registro[registro]='0x00000000'
+                            else:
                                 memoria=hex(int(self.registro[registro2[0]][-2:])+int(constante[1],2)).split("0x")
                                 value=self.ram['0x2007{0:0{1}X}'.format(int(str(memoria[1]),16),4)].split("0x")
                                 self.registro[registro]='0x000000{}'.format(value[1])
-                            else:
-                                self.registro["error"] = 13
-                                self.registro["descrError"] = "El valor del offset no es valido"
-                                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+                        else:
+                            self.registro["error"] = 13
+                            self.registro["descrError"] = "El valor del offset no es valido"
+                            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
-                        elif re.search(r"#0x[A-Fa-f\d]{1,2}", line) != None:
-                            constante=re.search(r"#0x[A-Fa-f\d]{1,2}", line).group().split("0x")
-                            if 0<int(constante[1],16)<32:
+                    elif re.search(r"#0x[A-Fa-f\d]{1,2}", line) != None:
+                        constante=re.search(r"#0x[A-Fa-f\d]{1,2}", line).group().split("0x")
+                        if 0<int(constante[1],16)<32:
+                            if hex(int(self.registro[registro2[0]][-2:])+int(constante[1])) > "0x29":
+                                self.registro[registro]='0x00000000'
+                            else:
                                 memoria=hex(int(self.registro[registro2[0]][-2:])+int(constante[1])).split("0x")
                                 value=self.ram['0x2007{0:0{1}X}'.format(int(memoria[1]),4)].split("0x")
                                 self.registro[registro]='0x000000{}'.format(value[1])
-                            else:
-                                self.registro["error"] = 13
-                                self.registro["descrError"] = "El valor del offset no es valido"
-                                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-                    else: 
-                        self.registro["error"] = 10
-                        self.registro["descrError"] = "No se puede acceder a esos registro"
-                        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-                else:
-                    self.registro["error"] = 10
-                    self.registro["descrError"] = "No se puede acceder a esos registro"
-                    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-            else:
-                self.registro["error"] = 4
-                self.registro["descrError"] = "Error de sintaxis"
-                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-        
-        def sxtb(self, line):
-            if re.search(r"^sxtb\s*r(\d|1[0-5])\s*,\s*r(\d|1[0-5])\s*$", line) != None:
-                if re.search(r"r([0-7])$", line) != None:
-                    registro=re.search(r"r([0-7])$", line).group()
-                    if re.search(r",\s*r([0-7])$", line) != None:
-                        registro2=re.search(r",\s*r([0-7])$", line).group().split()
-                        binario = bin(int(self.registro[registro2[1]], 16))[2:]
-                        if ((len(binario)==8) and (binario[0] == "1")):
-                            self.registro[registro]='0xFFFFFF{}'.format(self.registro[registro2[1]][-2:])
                         else:
-                            self.registro[registro]=self.registro[registro2[1]]
-                    else:
-                        self.registro["error"] = 10
-                        self.registro["descrError"] = "No se puede acceder a esos registro"
-                        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+                            self.registro["error"] = 13
+                            self.registro["descrError"] = "El valor del offset no es valido"
+                            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+                elif re.search(r",\s*\[\s*r([0-7]),\s*r([0-7])\s*\]$", line) != None:
+                    registro2=re.search(r",\s*\[\s*r([0-7])", line).group().split("[")
+                    registro2=registro2[1].split()
+                    if re.search(r",\s*r([0-7])\s*\]", line) != None:
+                        registro3=re.search(r",\s*r([0-7])\s*\]", line).group().split("]")
+                        registro3=registro3[0].split()
+                        if 0<=int(self.registro[registro3[1]],16)<42:
+                            memoria=hex(int(self.registro[registro2[0]][-2:])+int(self.registro[registro3[1]],16)).split("0x")
+                            value=self.ram['0x2007{0:0{1}X}'.format(int(memoria[1]),4)].split("0x")
+                            self.registro[registro]='0x000000{}'.format(value[1])
+                        elif hex(int(self.registro[registro2[0]][-2:])+int(self.registro[registro3[1]],16)) > "0x29":
+                            self.registro[registro]='0x00000000'
+                        else:
+                            self.registro["error"] = 13
+                            self.registro["descrError"] = "El valor del offset no es valido"
+                            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+                            
                 else: 
                     self.registro["error"] = 10
                     self.registro["descrError"] = "No se puede acceder a esos registro"
                     self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-
+            else:
+                self.registro["error"] = 10
+                self.registro["descrError"] = "No se puede acceder a esos registro"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+        else:
+            self.registro["error"] = 4
+            self.registro["descrError"] = "Error de sintaxis"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+        
+    def sxtb(self, line):
+        if re.search(r"^sxtb\s*r(\d|1[0-5])\s*,\s*r(\d|1[0-5])\s*$", line) != None:
+            if re.search(r"r([0-7])$", line) != None:
+                registro=re.search(r"r([0-7])$", line).group()
+                if re.search(r",\s*r([0-7])$", line) != None:
+                    registro2=re.search(r",\s*r([0-7])$", line).group().split()
+                    binario = bin(int(self.registro[registro2[1]], 16))[2:]
+                    if ((len(binario)==8) and (binario[0] == "1")):
+                        self.registro[registro]='0xFFFFFF{}'.format(self.registro[registro2[1]][-2:])
+                    else:
+                        self.registro[registro]=self.registro[registro2[1]]
+                else:
+                    self.registro["error"] = 10
+                    self.registro["descrError"] = "No se puede acceder a esos registro"
+                    self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+            else: 
+                self.registro["error"] = 10
+                self.registro["descrError"] = "No se puede acceder a esos registro"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
         else:
             self.registro["error"] = 4
             self.registro["descrError"] = "Error de sintaxis"
@@ -827,7 +865,9 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
+codigo.ldrb("ldrb r1, =-129")
 print(codigo.registro)
+#print(codigo.ca2(-128,8))
 print("------------------------------------------")
-print(codigo.ram)
-print(codigo.etiqueta)
+#print(codigo.ram)
+#print(codigo.etiqueta)

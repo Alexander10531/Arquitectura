@@ -1,8 +1,9 @@
 .data 
 
-	word: .word -0x1020
-
+	word: .word 0x10203040
+	byte: .byte 0x50
 .text
 			ldr r0, =word
-			ldr r1, [r0]
-	stop: wfi
+			mov r1, #0x75
+			ldrb r2, [r0]
+stop: wfi
