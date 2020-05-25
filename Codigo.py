@@ -187,11 +187,16 @@ class Codigo:
     def add(self,line):
         reg = re.findall(r"r[0-9]\s*|r[0-9]|#[0-9]*",line)
         rd = reg[0]     #registro destino
-        rs = reg[1]     #rs
-        rn = reg[2]     #rn (puede ser que sea un registro o un valor inmediato)
+        rs = reg[1]     #rs 
+        
+        try:
+            rn = reg[2]         #rn (puede ser que sea un registro o un valor inmediato)
+        except IndexError:
+            rn = None
 
-        reg = re.search(r"r[0-9]",rn)   #almacena un registro
-        d_inm = re.search(r"[0-9]",rn)  #almacena un dato inmediato
+        if rn is not None:                          #verifica si el tercer dato esta presente
+            reg = re.search(r"r[0-9]",rn)           #almacena un registro
+            d_inm = re.search(r"[0-9]",rn)          #almacena un dato inmediato
             
         if reg is not None:            #entra si es un registro
 
@@ -210,7 +215,7 @@ class Codigo:
 
         elif d_inm is not None:     #si es un dato inmediato
 
-            if int(d_inm.group()) <= 2**31-1 and int(d_inm.group()) >= -2**31:   #verifica si el valor esta dentro del rango   
+            if int(d_inm.group()) <=7:   #verifica si el valor esta dentro del rango(0-7)   
                 
                 val_rd = int(self.registro[rd],16)      #valor del registro destino (int)
                 val_rs = int(self.registro[rs],16)      #valor del registro rs  (int)
@@ -224,11 +229,28 @@ class Codigo:
                 self.registro[rd] = sum_fin #asignando el valor al registro
 
                 print(self.registro[rd])
-
             else:
                 self.registro["error"] = 5
-                self.registro["descrError"] = "El valor no puede almacenarse en k = 32"                 
+                self.registro["descrError"] = "El valor excede el limite de bits(3)"                 
                 self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+
+        elif rs is not None:                            #solo tiene rd y #inm8
+            d_inm = re.search(r"[0-9]",rs)
+            if int(d_inm.group()) <=255:
+                val_rd = int(self.registro[rd],16)   #valor del registro rd(int)
+                d_inm_int = int(d_inm.group())             #valor del dato inmediato(int)
+
+                val_rd = val_rd + d_inm_int
+
+                val_rd_hex = hex(val_rd)
+                val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group()
+                sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean
+                self.registro[rd] = sum_fin
+            else:
+                self.registro["error"] = 5
+                self.registro["descrError"] = "El valor exede el limite de bits(8)"                 
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+
         #print("add")
 
     def sub(self,line):
