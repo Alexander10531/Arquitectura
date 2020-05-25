@@ -167,6 +167,7 @@ class Codigo:
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
     
     def eor(self,line):
+
         
         if re.search(r"^eor\s+r\d+\s*,\s*r\d+$",line) != None:
             lista = re.findall("\d+",line)
@@ -612,7 +613,7 @@ class Codigo:
             self.registro["descrError"] = "Error de sintaxis"
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
-    def wfi(self):
+    def wfi(self,line):
         pass
     
     def leer_codigo(self,archivo,codigo):
@@ -723,3 +724,5 @@ codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
 print(codigo.registro)
+print("------------------------------------------")
+print(codigo.ram)

@@ -1,4 +1,8 @@
+.data 
+
+	word: .word -0x1020
+
 .text
-	mov r1, #12
-	ldr r2, =-12
-	eor r1, r1
+			ldr r0, =word
+			ldr r1, [r0]
+	stop: wfi
