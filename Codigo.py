@@ -825,7 +825,6 @@ class Codigo:
         
         # Si la lista retorna mas de dos valores eso quiere decir que el usuario ingreso mas de dos valores 
         # en su codigo. Ejemplo mov add r1, #255
-        print(lista)
         if len(lista) == 1:
             self.instrucciones[lista[0]](self.codigo[line])
         else:
