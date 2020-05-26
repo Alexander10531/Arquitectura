@@ -4,16 +4,9 @@ byte: .byte 0x50
 .text
 	mov r5, #2
 	ldr r0, =word
-	ldrb r1, =byte
-	ldrb r1, [r1]
-	ldrb r2, =-26
-	ldrb r3, =146
-	ldrb r4, =0xb5
-	ldrb r5, =0b1111
-	ldrb r6, =92
-	sxtb r2, r2
-	sxtb r3, r3
-	sxtb r6, r6
-	sxtb r7, r5
-	sxtb r4, r4
+	ldrb r1, [r0]
+	ldrb r2, [r0, #1]
+	ldrb r3, [r0, #0x1F]
+	ldrb r4, [r0, #0b111]
+	ldrb r5, [r0, r8]
 stop: wfi 
