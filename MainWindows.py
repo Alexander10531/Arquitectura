@@ -49,7 +49,7 @@ José Carlos Velásquez          20141031775""")
         self.editores.setFont(font)
         self.ptInicio  = QPushButton(self.groupMain)
         self.ptInicio.setGeometry(QRect(0,410,490,60))
-        self.ptInicio.setText("Inicial Simulacion")
+        self.ptInicio.setText("Iniciar Simulacion")
         self.ptInicio.setFont(font)
         self.ptInicio.setIcon(QIcon("Imagenes/computer.png"))
 
