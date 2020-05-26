@@ -6,7 +6,7 @@ class Codigo:
         # Registros, tambien se encuentran los valores lineaText, lineaData, error, descrError que se usan para el control del programa
         self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"0x00000000","r1":"0x00000000","r2":"0x00000000","r3":"0x00000000","r4": "0x00000000","r5":"0x00000000","r6":"0x00000000","r7":"0x00000000","r8":"0x00000000","r9":"0x00000000","r10":"0x00000000","r11":"0x00000000","r12":"0x00000000","r13":"0x00000000","r14":"0x00000000","r15":"0x00000000",} 
         # Diccionario de instrucciones en las que se encuentran los nombres de las instrucciones y estan asociados a las funciones
-        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte, "neg":self.neg, "mul":self.mul, "eor":self.eor,"orr":self.orr,"and": self.andd,"ldrb":self.ldrb,"sxtb":self.sxtb}
+        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr ":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte, "neg":self.neg, "mul":self.mul, "eor":self.eor,"orr":self.orr,"and": self.andd,"ldrb":self.ldrb,"sxtb":self.sxtb,"ldrh":"proof"}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
         self.etiqueta = {} 
@@ -168,7 +168,6 @@ class Codigo:
 
     def ldrb(self,line):
         if re.search(r"^ldrb\s*r(\d|1[0-5]),\s*=((0x|0X)[A-Fa-f\d]{2}|0b[01]{1,8}|([0-9]{1,2}|1[0-9]{2}|2[0-5]{5})|\-\d{1,3}|\w+)\s*$", line) != None:
-            print(line)
             if re.search(r"r[0-7]", line) != None:
                 registro=re.search(r"r[0-7]", line).group()
                 if re.search(r"=(0x|0X)[A-Fa-f\d]{1,2}", line) != None:
@@ -307,7 +306,6 @@ class Codigo:
             self.registro["descrError"] = "Error de sintaxis"
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
-    
     def eor(self,line):
 
         
@@ -827,12 +825,13 @@ class Codigo:
         
         # Si la lista retorna mas de dos valores eso quiere decir que el usuario ingreso mas de dos valores 
         # en su codigo. Ejemplo mov add r1, #255
+        print(lista)
         if len(lista) == 1:
             self.instrucciones[lista[0]](self.codigo[line])
         else:
-            self.registro["error"] = 4
-            self.registro["descrError"] = "Error de sintaxis"
-            self.registro["lineaError"] = line
+                self.registro["error"] = 4
+                self.registro["descrError"] = "Error de sintaxis"
+                self.registro["lineaError"] = line
 
     def exec_data(self,lineaData):
         # La logica de esta funcion se maneja de la misma manera que exec_text
@@ -865,9 +864,8 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
-codigo.ldrb("ldrb r1, =-129")
 print(codigo.registro)
-#print(codigo.ca2(-128,8))
+
 print("------------------------------------------")
 #print(codigo.ram)
 #print(codigo.etiqueta)
