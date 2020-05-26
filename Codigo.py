@@ -416,7 +416,7 @@ class Codigo:
             self.registro["lineaError"] = self.obtener_llave(line,self.ldrhValores,)
 
     def ldrhRegistros(self,line):
-        
+        pass
 
     def ldrhValores(self,line):
         print(line)
