@@ -1,9 +1,3 @@
-.data 
-
-	word: .word 0x10203040
-	byte: .byte 0x50
 .text
-			ldr r0, =word
-			ldr r1, [r0]
-			ldrb r2, =12			
-stop: wfi
+	ldrh r0, =0x10203040
+stop: wfi 

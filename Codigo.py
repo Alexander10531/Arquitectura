@@ -1,3 +1,5 @@
+#^ldrh\s+r\d+\s*,\s*(\[\s*r\d+\s*(,\s*(r\d|\d+))?\s*\]|=\s*(0b[10]+|0x[A-Fa-f\d]+|\d+))$
+
 import re
 
 class Codigo:
@@ -6,7 +8,7 @@ class Codigo:
         # Registros, tambien se encuentran los valores lineaText, lineaData, error, descrError que se usan para el control del programa
         self.registro = {"lineaText": None, "lineaData": None,"lineaError": None, "error" : None, "descrError" : None,"r0":"0x00000000","r1":"0x00000000","r2":"0x00000000","r3":"0x00000000","r4": "0x00000000","r5":"0x00000000","r6":"0x00000000","r7":"0x00000000","r8":"0x00000000","r9":"0x00000000","r10":"0x00000000","r11":"0x00000000","r12":"0x00000000","r13":"0x00000000","r14":"0x00000000","r15":"0x00000000",} 
         # Diccionario de instrucciones en las que se encuentran los nombres de las instrucciones y estan asociados a las funciones
-        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr ":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte, "neg":self.neg, "mul":self.mul, "eor":self.eor,"orr":self.orr,"and": self.andd,"ldrb":self.ldrb,"sxtb":self.sxtb,"ldrh":"proof"}
+        self.instrucciones = {"mov":self.mov,"add":self.add,"sub":self.sub,"str":self.strp,"ldr ":self.ldr,".word":self.word,".hword":self.hword,"wfi":self.wfi,".byte":self.byte, "neg":self.neg, "mul":self.mul, "eor":self.eor,"orr":self.orr,"and": self.andd,"ldrb":self.ldrb,"sxtb":self.sxtb,"ldrh":self.ldrh}
         # Diccionario de direccionas RAM asociadas asociadas en un inicio a un valor 0x00000000 en su valor por defecto, que sera definido
         # con la funcion crear_memoria()
         self.etiqueta = {} 
@@ -401,6 +403,23 @@ class Codigo:
 
     def sub(self,line):
         return "Aqui va su codigo :')"
+
+    def ldrh(self, line):
+        if re.search(r"^ldrh\s+r\d+\s*,\s*(\[\s*r\d+\s*(,\s*(r\d|\d+))?\s*\]|=\s*(0b[10]+|0x[A-Fa-f\d]+|\d+))$",line):
+            diccionario = {re.search(r"=\s*(0x[A-Fa-f\d]+|0b[01]+|\d+)",line):self.ldrhValores,re.search(r"\[\s*r\d+\s*(,(\s*r\d+|\s*\d+))?\s*\]",line):self.ldrhRegistros}
+            del diccionario[None]
+            diccionario[list(diccionario.keys())[0]](line)
+            del(diccionario)
+        else:
+            self.registro["error"] = 4
+            self.registro["descrError"] = "Error de sintaxis"
+            self.registro["lineaError"] = self.obtener_llave(line,self.ldrhValores,)
+
+    def ldrhRegistros(self,line):
+        
+
+    def ldrhValores(self,line):
+        print(line)
 
     def ldr(self,line):
         if re.search(r"^ldr\s+r\d{1,2}\s*,\s*(\[r\d{1,2}\]|=\s*(-?0x[A-Fa-f\d]+|-?0b[10]+|-?\d+|\w+))$",line) != None:
@@ -863,8 +882,3 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
-print(codigo.registro)
-
-print("------------------------------------------")
-#print(codigo.ram)
-#print(codigo.etiqueta)
