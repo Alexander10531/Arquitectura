@@ -195,12 +195,12 @@ class Codigo:
                     etiqueta=re.search(r"=\w+", line).group().split("=")
                     direccion = self.etiqueta[etiqueta[1]].split("10x")
                     self.registro[registro]='0x{}'.format(direccion[1])
-            else:
+            elif re.search(r"r([8-9]|1[0-5])",line) !=None:
                 self.registro["error"] = 10
                 self.registro["descrError"] = "No se puede acceder a esos registro"
                 self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-        elif re.search(r"^ldrb\s*r(\d|1[0-5]),\s*\[\s*(r(\d|1[0-5])|r(\d|1[0-5]),\s*((r(\d|1[0-5]))|#((\d{1,2})|0x[A-Fa-f\d]{1,2}|0b[01]{1,8})))\s*\]\s*$", line) != None:
-            if re.search(r"r[0-7]",line) !=None:
+        elif re.search(r"^ldrb\s*r([0-9]|1[0-5])\s*,\s*\[\s*(r(\d|1[0-5])|r(\d|1[0-5]),\s*((r(\d|1[0-5]))|#((\d{1,2})|0x[A-Fa-f\d]{1,2}|0b[01]{1,8})))\s*\]\s*$", line) != None:
+            if re.search(r"ldrb\s*r[0-7]\s*,",line) !=None:
                 registro=re.search(r"r[0-7]", line).group()
                 if re.search(r"(,\s*\[\s*r([0-7])\s*\])|(,\s*\[\s*(r([0-7]),\s*#(0|0x[0]{1,2}|0b[0]{1,8}))\s*\])", line) != None:
                     registro2=re.search(r",\s*\[\s*r([0-7])\s*", line).group().split("[")
@@ -211,12 +211,10 @@ class Codigo:
                     registro2=re.search(r",\s*\[\s*r([0-7])", line).group().split("[")
                     registro2=registro2[1].split()
                     if re.search(r"#(\d{1,2})\s*\]$", line) != None:
-                        print(line)
                         constante=re.search(r"#(\d{1,2})\s*\]$", line).group().split("#")
                         constante=constante[1].split("]")
-                        print(constante)
                         if 0<int(constante[0])<32:
-                            if hex(int(self.registro[registro2[0]][-2:])+int(constante[0])) > "0x29":
+                            if int(self.registro[registro2[0]][-2:])+int(constante[0]) > 41:
                                 self.registro[registro]='0x00000000'
                             else:
                                 memoria=hex(int(self.registro[registro2[0]][-2:])+int(constante[0])).split("0x")
@@ -227,13 +225,14 @@ class Codigo:
                             self.registro["descrError"] = "El valor del offset no es valido"
                             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
-                    elif re.search(r"#0b[01]{1,8}", line) != None:
-                        constante=re.search(r"#0b[01]{1,8}", line).group().split("0b")
-                        if 0<int(constante[1],2)<32:
-                            if hex(int(self.registro[registro2[0]][-2:])+int(constante[1],2)) > "0x29":
+                    elif re.search(r"#0b[01]{1,8}\s*\]$", line) != None:
+                        constante=re.search(r"#0b[01]{1,8}\s*\]$", line).group().split("0b")
+                        constante=constante[1].split("]")
+                        if 0<int(str(constante[0]),2)<32:
+                            if int(self.registro[registro2[0]][-2:])+int(str(constante[0]),2) > 41:
                                 self.registro[registro]='0x00000000'
                             else:
-                                memoria=hex(int(self.registro[registro2[0]][-2:])+int(constante[1],2)).split("0x")
+                                memoria=hex(int(self.registro[registro2[0]][-2:])+int(str(constante[0]),2)).split("0x")
                                 value=self.ram['0x2007{0:0{1}X}'.format(int(str(memoria[1]),16),4)].split("0x")
                                 self.registro[registro]='0x000000{}'.format(value[1])
                         else:
@@ -243,17 +242,18 @@ class Codigo:
 
                     elif re.search(r"#0x[A-Fa-f\d]{1,2}", line) != None:
                         constante=re.search(r"#0x[A-Fa-f\d]{1,2}", line).group().split("0x")
-                        if 0<int(constante[1],16)<32:
-                            if hex(int(self.registro[registro2[0]][-2:])+int(constante[1])) > "0x29":
+                        if 0<int(str(constante[1]),16)<32:
+                            if int(self.registro[registro2[0]][-2:])+int(str(constante[1]),16) > 41:
                                 self.registro[registro]='0x00000000'
                             else:
-                                memoria=hex(int(self.registro[registro2[0]][-2:])+int(constante[1])).split("0x")
-                                value=self.ram['0x2007{0:0{1}X}'.format(int(memoria[1]),4)].split("0x")
+                                memoria=hex(int(self.registro[registro2[0]][-2:])+int(str(constante[1]),16)).split("0x")
+                                value=self.ram['0x2007{0:0{1}X}'.format(int(str(memoria[1]),16),4)].split("0x")
                                 self.registro[registro]='0x000000{}'.format(value[1])
                         else:
                             self.registro["error"] = 13
                             self.registro["descrError"] = "El valor del offset no es valido"
                             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+
                 elif re.search(r",\s*\[\s*r([0-7]),\s*r([0-7])\s*\]$", line) != None:
                     registro2=re.search(r",\s*\[\s*r([0-7])", line).group().split("[")
                     registro2=registro2[1].split()
@@ -269,8 +269,7 @@ class Codigo:
                         else:
                             self.registro["error"] = 13
                             self.registro["descrError"] = "El valor del offset no es valido"
-                            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-                            
+                            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)             
                 else: 
                     self.registro["error"] = 10
                     self.registro["descrError"] = "No se puede acceder a esos registro"
@@ -286,10 +285,11 @@ class Codigo:
         
     def sxtb(self, line):
         if re.search(r"^sxtb\s*r(\d|1[0-5])\s*,\s*r(\d|1[0-5])\s*$", line) != None:
-            if re.search(r"r([0-7])$", line) != None:
-                registro=re.search(r"r([0-7])$", line).group()
-                if re.search(r",\s*r([0-7])$", line) != None:
-                    registro2=re.search(r",\s*r([0-7])$", line).group().split()
+            if re.search(r"r([0-7]),", line) != None:
+                registro=re.search(r"r([0-7])", line).group()
+                print(registro)
+                if re.search(r",\s*r([0-7])", line) != None:
+                    registro2=re.search(r",\s*r([0-7])", line).group().split()
                     binario = bin(int(self.registro[registro2[1]], 16))[2:]
                     if ((len(binario)==8) and (binario[0] == "1")):
                         self.registro[registro]='0xFFFFFF{}'.format(self.registro[registro2[1]][-2:])
@@ -882,3 +882,5 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
+#codigo.ldrb("ldrb r4, [r0, #0b11]")
+print(codigo.registro)
