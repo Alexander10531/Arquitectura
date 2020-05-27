@@ -193,8 +193,13 @@ class Codigo:
                         self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
                 else:
                     etiqueta=re.search(r"=\w+", line).group().split("=")
-                    direccion = self.etiqueta[etiqueta[1]].split("x")
-                    self.registro[registro]='0x{}'.format(direccion[1])
+                    if etiqueta[1] in list(self.etiqueta.keys()):
+                        direccion = self.etiqueta[etiqueta[1]].split("x")
+                        self.registro[registro]='0x{}'.format(direccion[1])
+                    else:
+                        self.registro["error"] = 11
+                        self.registro["descrError"] = "La etiqueta no existe"
+                        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
             elif re.search(r"r([8-9]|1[0-5])",line) !=None:
                 self.registro["error"] = 10
                 self.registro["descrError"] = "No se puede acceder a esos registro"
@@ -902,3 +907,4 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
+

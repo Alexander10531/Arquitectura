@@ -1,5 +1,5 @@
 .data 
 	word1: .word 0x10203040
 .text 
-	ldrb r0, =word1
+	ldrb r0, =word
 	ldrb r1, =-12
