@@ -1,5 +1,14 @@
+<<<<<<< HEAD
 .text
 mov r1, #10
 mov r2, #10
 mov r3, #1
 add r1,r2
+=======
+.data
+	byte: .word 0x10
+
+.text
+	ldrb r0, =byte
+	ldrb r1, [r1]  
+>>>>>>> e6c87f44378b35d39b7138a208501985e57417d6

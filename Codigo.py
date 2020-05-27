@@ -209,8 +209,14 @@ class Codigo:
                 if re.search(r"(,\s*\[\s*r([0-7])\s*\])|(,\s*\[\s*(r([0-7])\s*,\s*#(0|0x[0]{1,2}|0b[0]{1,8}))\s*\])", line) != None:
                     registro2=re.search(r",\s*\[\s*r([0-7])\s*", line).group().split("[")
                     registro2=registro2[1].split()
-                    value=self.ram[self.registro[registro2[0][-2:]]].split("x")
-                    self.registro[registro]='0x000000{}'.format(value[1])
+                    print(self.registro[registro2[0]])
+                    if re.search(r"0x2007", self.registro[registro2[0]]) != None:
+                        value=self.ram[self.registro[registro2[0][-2:]]].split("x")
+                        self.registro[registro]='0x000000{}'.format(value[1])
+                    else: 
+                        self.registro["error"] = 4
+                        self.registro["descrError"] = "Error de sintaxis"
+                        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
                 elif re.search(r",\s*\[\s*r([0-7])\s*,\s*#((\d{1,2})|0x[A-Fa-f\d]{1,2}|0b[01]{1,8})\s*\]", line) != None:
                     registro2=re.search(r",\s*\[\s*r([0-7])", line).group().split("[")
                     registro2=registro2[1].split()
@@ -480,7 +486,7 @@ class Codigo:
 
     def ldrh(self, line):
         if re.search(r"^ldrh\s+r\d+\s*,\s*(\[\s*r\d+\s*(,\s*(r\d|#\d+))?\s*\]|=\s*-?(0b[10]+|0x[A-Fa-f\d]+|\d+))$",line):
-            diccionario = {re.search(r"=\s*-?(0x[A-Fa-f\d]+|0b[01]+|\d+)",line):self.ldrhValores,re.search(r"\[\s*r\d+\s*(,(\s*r\d+|#\s*\d+))?\s*\]",line):self.ldrhRegistros}
+            diccionario = {re.search(r"=\s*-?(0x[A-Fa-f\d]+|0b[01]+|\d+)",line):self.ldrhValores,re.search(r"\[\s*r\d+\s*(,(\s*r\d+|\s*#\d+))?\s*\]",line):self.ldrhRegistros}
             del diccionario[None]
             diccionario[list(diccionario.keys())[0]](line)
             del(diccionario)
@@ -488,9 +494,6 @@ class Codigo:
             self.registro["error"] = 4
             self.registro["descrError"] = "Error de sintaxis"
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-
-    def ldrhRegistros(self,line):
-        pass
 
     def ldrhValores(self,line):
         valor = {re.search(r"-?0x[A-Fa-f\d]+",line):16,re.search(r"-?0b[01]+",line):2}
