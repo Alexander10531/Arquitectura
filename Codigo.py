@@ -222,7 +222,7 @@ class Codigo:
                                 self.registro[registro]='0x00000000'
                             else:
                                 memoria=hex(int(self.registro[registro2[0]][-2:])+int(constante[0])).split("0x")
-                                value=self.ram['0x2007{0:0{1}X}'.format(int(memoria[1]),4)].split("0x")
+                                value=self.ram['0x2007{0:0{1}X}'.format(int(str(memoria[1]),16),4)].split("0x")
                                 self.registro[registro]='0x000000{}'.format(value[1])
                         else:
                             self.registro["error"] = 13
