@@ -29,13 +29,14 @@ class SimulationWindow(QMainWindow):
         fileW = open("Codigo.txt","w")
         fileW.write(self.cuadroDeTexto.toPlainText())
         fileW.close()
+        
         self.codigo = Codigo("Codigo.txt ")
-        self.codigo.exec_text(self.codigo.registro["lineaText"])
         self.codigo.exec_data(self.codigo.registro["lineaData"])
+        self.codigo.exec_text(self.codigo.registro["lineaText"])
         self.actualizarTablas()
+        self.resultadoEjecucuion()
         # print(self.codigo.registro)
         # print(self.codigo.ram)
-        self.resultadoEjecucuion()
     
     def resultadoEjecucuion(self):
         if self.codigo.registro["lineaError"] is None:
@@ -64,7 +65,7 @@ class SimulationWindow(QMainWindow):
         self.cuadroDeTexto.setPlainText(""".data
 word1:  .word 0x10203040
 hword2:  .hword 0x5060
-byte3:  .byte #22
+byte3:  .byte 22
 
 .text
 mov r0, #220
@@ -72,6 +73,7 @@ mov r1, #4
 mov r2, #22
 mov r3,#6
 mov r4,#254
+ldr r5, =byte3
 
         """)
         self.resultado = QPlainTextEdit(espacio)

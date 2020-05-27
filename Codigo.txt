@@ -1,0 +1,15 @@
+<<<<<<< HEAD
+=======
+.data
+word: .word 0x10203040
+byte: .byte 0x50
+.text
+	mov r5, #2
+	ldr r0, =word
+	ldrb r1, [r0]
+	ldrb r2, [r0, #1]
+	ldrb r3, [r0, #0x1F]
+	ldrb r4, [r0, #0b111]
+	ldrb r5, [r0, r8]
+stop: wfi 
+>>>>>>> 90ae8462a4717ae46554cc9f4e03d9119186f938
