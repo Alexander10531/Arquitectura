@@ -186,14 +186,14 @@ class Codigo:
                     if -129 < int(constante[1]) < 0:
                         value=self.ca2(int(constante[1]),8)
                         value=value.split("0b")
-                        self.registro[registro]='0x{0:0{1}X}'.format(int(str(value[1]),2),8)
+                        self.registro[registro]='0xFFFFFF{0:0{1}X}'.format(int(str(value[1]),2),2)
                     else:
                         self.registro["error"] = 5
                         self.registro["descrError"] = "Codigo Error = 5: El valor no puede almacenarse en k = 8"
                         self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
                 else:
                     etiqueta=re.search(r"=\w+", line).group().split("=")
-                    direccion = self.etiqueta[etiqueta[1]].split("10x")
+                    direccion = self.etiqueta[etiqueta[1]].split("x")
                     self.registro[registro]='0x{}'.format(direccion[1])
             elif re.search(r"r([8-9]|1[0-5])",line) !=None:
                 self.registro["error"] = 10
