@@ -85,7 +85,6 @@ class Codigo:
         if re.search(r"^neg\s*r\d{1,2}\s*,\s*r\d{1,2}$",line):
             f = lambda x: x if int(x) < 8 else None
             lista = list(filter(None,list(map(f,re.findall(r"\d{1,2}",line)))))
-            print(lista)
             if len(lista) == 2:
                 lista[1] = -self.ca2_decimal(self.registro["r" + str(lista[1])])
                 lista[1] = hex(int(self.ca2(lista[1],32),2))
@@ -186,15 +185,20 @@ class Codigo:
                     if -129 < int(constante[1]) < 0:
                         value=self.ca2(int(constante[1]),8)
                         value=value.split("0b")
-                        self.registro[registro]='0x{0:0{1}X}'.format(int(str(value[1]),2),8)
+                        self.registro[registro]='0xFFFFFF{0:0{1}X}'.format(int(str(value[1]),2),2)
                     else:
                         self.registro["error"] = 5
                         self.registro["descrError"] = "Codigo Error = 5: El valor no puede almacenarse en k = 8"
                         self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
                 else:
                     etiqueta=re.search(r"=\w+", line).group().split("=")
-                    direccion = self.etiqueta[etiqueta[1]].split("10x")
-                    self.registro[registro]='0x{}'.format(direccion[1])
+                    if etiqueta[1] in list(self.etiqueta.keys()):
+                        direccion = self.etiqueta[etiqueta[1]].split("x")
+                        self.registro[registro]='0x{}'.format(direccion[1])
+                    else:
+                        self.registro["error"] = 11
+                        self.registro["descrError"] = "La etiqueta no existe"
+                        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
             elif re.search(r"r([8-9]|1[0-5])",line) !=None:
                 self.registro["error"] = 10
                 self.registro["descrError"] = "No se puede acceder a esos registro"
@@ -218,7 +222,7 @@ class Codigo:
                                 self.registro[registro]='0x00000000'
                             else:
                                 memoria=hex(int(self.registro[registro2[0]][-2:])+int(constante[0])).split("0x")
-                                value=self.ram['0x2007{0:0{1}X}'.format(int(memoria[1]),4)].split("0x")
+                                value=self.ram['0x2007{0:0{1}X}'.format(int(str(memoria[1]),16),4)].split("0x")
                                 self.registro[registro]='0x000000{}'.format(value[1])
                         else:
                             self.registro["error"] = 13
@@ -309,7 +313,6 @@ class Codigo:
 
     def eor(self,line):
 
-        
         if re.search(r"^eor\s+r\d+\s*,\s*r\d+$",line) != None:
             lista = re.findall("\d+",line)
             f = lambda x: x if int(x) < 8 else None
@@ -428,11 +431,56 @@ class Codigo:
         #print("add")
 
     def sub(self,line):
-        return "Aqui va su codigo :')"
+        if re.search(r"^\s*sub\s*r[0-7]\s*,\s*((r([0-7])\s*,\s*r([0-7]))|(r([0-7])\s*,\s*#\s*[0-7])|#\s*(((2[0-4]\d)|(25[0-5]))|(1\d\d)|([1-9]\d)|(\d)))$",line):
+            registros = re.findall(r"r[0-7]",line)
+            datoInmediato = re.findall(r"#\d?\d?\d",line)
+            
+            if len(registros)==3:
+                rd=registros[0]
+                operando1=int(self.registro[registros[1]],16)
+                operando2=int(self.registro[registros[2]],16)
+                resultado = operando1-operando2
+                if resultado >= 0:
+                    self.registro[rd]='0x{0:0{1}X}'.format(resultado,8)
+                else:
+                    self.registro[rd]='0x{0:0{1}X}'.format((int(self.ca2(resultado,32),2)),8)
+
+            elif len(registros)==2 and len(datoInmediato)==1:
+                rd=registros[0]
+                operando1=int(self.registro[registros[1]],16)
+                operando2=int(datoInmediato[0][1:])
+                resultado = operando1-operando2
+                if resultado >= 0:
+                    self.registro[rd]='0x{0:0{1}X}'.format(resultado,8)
+                else:
+                    self.registro[rd]='0x{0:0{1}X}'.format((int(self.ca2(resultado,32),2)),8)
+
+            elif len(registros)==1 and len(datoInmediato)==1:
+                rd=registros[0]
+                operando1=int(self.registro[registros[0]],16)
+                operando2=int(datoInmediato[0][1:])
+                resultado = operando1-operando2
+                if resultado >= 0:
+                    self.registro[rd]='0x{0:0{1}X}'.format(resultado,8)
+                else:
+                    self.registro[rd]='0x{0:0{1}X}'.format((int(self.ca2(resultado,32),2)),8)
+        else:
+            if re.search(r"^\s*sub\s*r((1[0-5])|(\d))\s*,\s*((r((1[0-5])|(\d))\s*,\s*r((1[0-5])|(\d)))|(r((1[0-5])|(\d))\s*,\s*#\s*[0-7])|#\s*(((2[0-4]\d)|(25[0-5]))|(1\d\d)|([1-9]\d)|(\d)))$",line):
+                self.registro["error"] = 12
+                self.registro["descrError"] = "El valor del registro no es valido"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+            elif re.search(r"^\s*sub\s*r[0-7]\s*,\s*((r([0-7])\s*,\s*r([0-7]))|(r([0-7])\s*,\s*#\s*\d*)|#\s*\d*)$",line):
+                self.registro["error"] = 16
+                self.registro["descrError"] = "Valor inmediato fuera de rango"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+            else:
+                self.registro["error"] = 4
+                self.registro["descrError"] = "Error de sintaxis"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
     def ldrh(self, line):
-        if re.search(r"^ldrh\s+r\d+\s*,\s*(\[\s*r\d+\s*(,\s*(r\d|\d+))?\s*\]|=\s*-?(0b[10]+|0x[A-Fa-f\d]+|\d+))$",line):
-            diccionario = {re.search(r"=\s*-?(0x[A-Fa-f\d]+|0b[01]+|\d+)",line):self.ldrhValores,re.search(r"\[\s*r\d+\s*(,(\s*r\d+|\s*\d+))?\s*\]",line):self.ldrhRegistros}
+        if re.search(r"^ldrh\s+r\d+\s*,\s*(\[\s*r\d+\s*(,\s*(r\d|#\d+))?\s*\]|=\s*-?(0b[10]+|0x[A-Fa-f\d]+|\d+))$",line):
+            diccionario = {re.search(r"=\s*-?(0x[A-Fa-f\d]+|0b[01]+|\d+)",line):self.ldrhValores,re.search(r"\[\s*r\d+\s*(,(\s*r\d+|#\s*\d+))?\s*\]",line):self.ldrhRegistros}
             del diccionario[None]
             diccionario[list(diccionario.keys())[0]](line)
             del(diccionario)
@@ -442,7 +490,7 @@ class Codigo:
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
     def ldrhRegistros(self,line):
-        print(line)
+        pass
 
     def ldrhValores(self,line):
         valor = {re.search(r"-?0x[A-Fa-f\d]+",line):16,re.search(r"-?0b[01]+",line):2}
@@ -451,11 +499,11 @@ class Codigo:
         if valor > -2**15 and valor < 2**15-1:
             rd = re.search(r"r[0-7]",line)
             if rd != None:
-                pass
-                #Revisar el almacenamiento de los valores
-                #rd = rd.group()
-                #valor = hex(int(self.ca2(valor, 16),2))
-                #self.registro[rd] = "0x" + (10 - len(valor))*"0" + valor[2:].upper()
+                rd = rd.group()
+                valor = hex(int(self.ca2(valor, 32),2))
+                self.registro[rd] = "0x" + (10 - len(valor))*"0" + valor[2:].upper()
+                del(valor)
+                del(rd)
             else:
                 self.registro["error"] = 10
                 self.registro["descrError"]  = "No se puede acceder a esos registro"
@@ -929,3 +977,4 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
+print(codigo.registro)
