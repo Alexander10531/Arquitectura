@@ -405,22 +405,43 @@ class Codigo:
         return "Aqui va su codigo :')"
 
     def ldrh(self, line):
-        if re.search(r"^ldrh\s+r\d+\s*,\s*(\[\s*r\d+\s*(,\s*(r\d|\d+))?\s*\]|=\s*(0b[10]+|0x[A-Fa-f\d]+|\d+))$",line):
-            diccionario = {re.search(r"=\s*(0x[A-Fa-f\d]+|0b[01]+|\d+)",line):self.ldrhValores,re.search(r"\[\s*r\d+\s*(,(\s*r\d+|\s*\d+))?\s*\]",line):self.ldrhRegistros}
+        if re.search(r"^ldrh\s+r\d+\s*,\s*(\[\s*r\d+\s*(,\s*(r\d|\d+))?\s*\]|=\s*-?(0b[10]+|0x[A-Fa-f\d]+|\d+))$",line):
+            diccionario = {re.search(r"=\s*-?(0x[A-Fa-f\d]+|0b[01]+|\d+)",line):self.ldrhValores,re.search(r"\[\s*r\d+\s*(,(\s*r\d+|\s*\d+))?\s*\]",line):self.ldrhRegistros}
             del diccionario[None]
             diccionario[list(diccionario.keys())[0]](line)
             del(diccionario)
         else:
             self.registro["error"] = 4
             self.registro["descrError"] = "Error de sintaxis"
-            self.registro["lineaError"] = self.obtener_llave(line,self.ldrhValores,)
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
     def ldrhRegistros(self,line):
-        pass
-
-    def ldrhValores(self,line):
         print(line)
 
+    def ldrhValores(self,line):
+        valor = {re.search(r"-?0x[A-Fa-f\d]+",line):16,re.search(r"-?0b[01]+",line):2}
+        del valor[None]
+        valor = int(list(valor.keys())[0].group(),valor[list(valor.keys())[0]]) if len(valor) == 1 else int(re.search(r"=-?\d+",line).group()[1:])
+        if valor > -2**15 and valor < 2**15-1:
+            rd = re.search(r"r[0-7]",line)
+            if rd != None:
+                pass
+                #Revisar el almacenamiento de los valores
+                #rd = rd.group()
+                #valor = hex(int(self.ca2(valor, 16),2))
+                #self.registro[rd] = "0x" + (10 - len(valor))*"0" + valor[2:].upper()
+            else:
+                self.registro["error"] = 10
+                self.registro["descrError"]  = "No se puede acceder a esos registro"
+                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+                del(rd)
+                del(valor)
+        else:
+            self.registro["error"] = 5
+            self.registro["descrError"] = "El valor no se puede almacenear en k = 16"
+            self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
+            del(valor)
+            
     def ldr(self,line):
         if re.search(r"^ldr\s+r\d{1,2}\s*,\s*(\[r\d{1,2}\]|=\s*(-?0x[A-Fa-f\d]+|-?0b[10]+|-?\d+|\w+))$",line) != None:
             rd = re.search(r"\[r[0-9]{1,2}\]$",line)                          #registro
@@ -882,3 +903,15 @@ class Codigo:
 codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
+print(codigo.registro)
+print("-----------------------------------")
+print(codigo.ram)
+
+        #if valor > -2**15 and valor < 2**15:
+        #    rd = re.search(r"r[0-7]",line)
+        #    if rd != None:
+        #        rd = rd.group()
+        #        valor = hex(int(self.ca2(valor,16),2))
+        #        print(valor)
+        #    else:
+

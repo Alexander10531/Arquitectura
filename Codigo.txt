@@ -1,3 +1,0 @@
-.text
-	ldrh r0, =0x10203040
-stop: wfi 
