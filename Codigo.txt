@@ -1,4 +1,3 @@
 .data 
 	word1: .word 0x10203040
 .text 
-     
