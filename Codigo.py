@@ -353,7 +353,7 @@ class Codigo:
 
                 val_rd_ca2 = self.ca2(val_rd,32)
                 val_rd_int = int(val_rd_ca2,2)
-                val_rd_hex = hex(val_rd_int,16)
+                val_rd_hex = hex(val_rd_int)
                 val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group()
                 sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean
                 self.registro[rd] = sum_fin 
@@ -371,7 +371,7 @@ class Codigo:
 
                         val_rd_ca2 = self.ca2(val_rd,32)
                         val_rd_int = int(val_rd_ca2,2)
-                        val_rd_hex = hex(val_rd_int,16)
+                        val_rd_hex = hex(val_rd_int)
                         val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group()
                         sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean
                         self.registro[rd] = sum_fin 
@@ -398,7 +398,7 @@ class Codigo:
 
                         val_rd_ca2 = self.ca2(val_rd,32)
                         val_rd_int = int(val_rd_ca2,2)
-                        val_rd_hex = hex(val_rd_int,16)
+                        val_rd_hex = hex(val_rd_int)
                         val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group()
                         sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean
                         self.registro[rd] = sum_fin 
@@ -415,7 +415,7 @@ class Codigo:
                 
                 val_rd_ca2 = self.ca2(val_rd,32)
                 val_rd_int = int(val_rd_ca2,2)
-                val_rd_hex = hex(val_rd_int,16)
+                val_rd_hex = hex(val_rd_int)
                 val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group()
                 sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean
                 self.registro[rd] = sum_fin 
@@ -978,3 +978,4 @@ codigo = Codigo("Codigo.txt")
 codigo.exec_data(codigo.registro["lineaData"])
 codigo.exec_text(codigo.registro["lineaText"])
 print(codigo.registro)
+print(codigo.ram)
