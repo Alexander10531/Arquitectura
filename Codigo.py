@@ -209,8 +209,14 @@ class Codigo:
                 if re.search(r"(,\s*\[\s*r([0-7])\s*\])|(,\s*\[\s*(r([0-7])\s*,\s*#(0|0x[0]{1,2}|0b[0]{1,8}))\s*\])", line) != None:
                     registro2=re.search(r",\s*\[\s*r([0-7])\s*", line).group().split("[")
                     registro2=registro2[1].split()
-                    value=self.ram[self.registro[registro2[0][-2:]]].split("x")
-                    self.registro[registro]='0x000000{}'.format(value[1])
+                    print(self.registro[registro2[0]])
+                    if re.search(r"0x2007", self.registro[registro2[0]]) != None:
+                        value=self.ram[self.registro[registro2[0][-2:]]].split("x")
+                        self.registro[registro]='0x000000{}'.format(value[1])
+                    else: 
+                        self.registro["error"] = 4
+                        self.registro["descrError"] = "Error de sintaxis"
+                        self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
                 elif re.search(r",\s*\[\s*r([0-7])\s*,\s*#((\d{1,2})|0x[A-Fa-f\d]{1,2}|0b[01]{1,8})\s*\]", line) != None:
                     registro2=re.search(r",\s*\[\s*r([0-7])", line).group().split("[")
                     registro2=registro2[1].split()
@@ -335,70 +341,97 @@ class Codigo:
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
     def add(self,line):
-        reg = re.findall(r"r[0-9]\s*|r[0-9]|#[0-9]*",line)
-        rd = reg[0]     #registro destino
-        rs = reg[1]     #rs 
-        
-        try:
-            rn = reg[2]         #rn (puede ser que sea un registro o un valor inmediato)
-        except IndexError:
-            rn = None
+        if re.search(r"^add\s+r\d{1,2}\s*,\s*(#[0-9]+|r[0-9])\s*,\s*(#[0-9]+|r[0-9])\s*$", line) is not None:
+            reg = re.findall(r"r[0-9]\s*|r[0-9]|#[0-9]*",line)
+            rd = reg[0]     
+            rs = reg[1]
+            rn = reg[2]
 
-        if rn is not None:                          #verifica si el tercer dato esta presente
-            reg = re.search(r"r[0-9]",rn)           #almacena un registro
-            d_inm = re.search(r"[0-9]",rn)          #almacena un dato inmediato
-            
-        if reg is not None:            #entra si es un registro
+            reg = re.search(r"r[0-9]",rn)
+            d_inm = re.search(r"[0-9]+",rn)
+            #print(d_inm)
+            if reg is not None:
+                val_rd = int(self.registro[rd],16)
+                val_rs = int(self.registro[rs],16)
+                val_rn = int(self.registro[rn],16)
 
-                val_rd = int(self.registro[rd],16)      #valor del registro destino(int)
-                val_rs = int(self.registro[rs],16)      #valor del rs(int)
-                val_rn = int(self.registro[rn],16)      #valor del rn(int)
+                val_rd = val_rs + val_rn
 
-                val_rd = val_rs + val_rn           #valor de la sumatoria (int)
-
-                val_rd_hex = hex(val_rd)            #valor de la sumatoria en hexadeximal
-                val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group() #eliminando el "0x" generado por python
-                sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean    #añadiendo el 0x000000
-                self.registro[rd] = sum_fin     #asignando el valor al registro
-
-                print(self.registro[rd])
-
-        elif d_inm is not None:     #si es un dato inmediato
-
-            if int(d_inm.group()) <=7:   #verifica si el valor esta dentro del rango(0-7)   
-                
-                val_rd = int(self.registro[rd],16)      #valor del registro destino (int)
-                val_rs = int(self.registro[rs],16)      #valor del registro rs  (int)
-                d_inm_int = int(d_inm.group())          #valor del dato inmediato   (int)
-                
-                val_rd = val_rs +d_inm_int              #valor de la suma (int)
-
-                val_rd_hex = hex(val_rd)                #valor de la suma en hex
-                val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group() #eliminando el "0x" generado por python
-                sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean    #añadiendo el 0x000000
-                self.registro[rd] = sum_fin #asignando el valor al registro
-
-                print(self.registro[rd])
-            else:
-                self.registro["error"] = 5
-                self.registro["descrError"] = "El valor excede el limite de bits(3)"                 
-                self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
-
-        elif rs is not None:                            #solo tiene rd y #inm8
-            d_inm = re.search(r"[0-9]",rs)
-            if int(d_inm.group()) <=255:
-                val_rd = int(self.registro[rd],16)   #valor del registro rd(int)
-                d_inm_int = int(d_inm.group())             #valor del dato inmediato(int)
-
-                val_rd = val_rd + d_inm_int
-
-                val_rd_hex = hex(val_rd)
+                val_rd_ca2 = self.ca2(val_rd,32)
+                val_rd_int = int(val_rd_ca2,2)
+                val_rd_hex = hex(val_rd_int,16)
                 val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group()
                 sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean
-                self.registro[rd] = sum_fin
-            else:
-                self.registro["error"] = 5
-                self.registro["descrError"] = "El valor exede el limite de bits(8)"                 
+                self.registro[rd] = sum_fin 
+
+                #self.print("suma de tres registros: "+registro[rd])
+
+            elif d_inm is not None:
+                if int(d_inm.group()) <= 2**31-1 and int(d_inm.group()) >= -2**31:
+                    if int(d_inm.group()) <= 7:
+                        val_rd = int(self.registro[rd],16)
+                        val_rs = int(self.registro[rs],16)
+                        d_inm_int = int(d_inm.group())
+                    
+                        val_rd = val_rs +d_inm_int
+
+                        val_rd_ca2 = self.ca2(val_rd,32)
+                        val_rd_int = int(val_rd_ca2,2)
+                        val_rd_hex = hex(val_rd_int,16)
+                        val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group()
+                        sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean
+                        self.registro[rd] = sum_fin 
+
+                        #print("suma de dos registros y un val inm: "+registro[rd])
+                    else:
+                        print("el valor del # exede el limite de bits(3)")
+
+            #print("son tres registos")
+        elif re.search(r"^add\s+r\d{1,2}\s*,\s*(#[0-9]+|r[0-9])\s*",line) is not None:
+            reg = re.findall(r"r[0-9]\s*|r[0-9]|#[0-9]*",line)
+            rd = reg[0]
+            rs = reg[1]
+
+            if re.search(r"#[0-9]+",rs) is not None:
+                if re.search(r"(?!#)([0-9]+)",rs) is not None:
+                    if int(re.search(r"(?!#)([0-9]+)",rs).group()) <= 255:
+                        d_inm = re.search(r"(?!#)([0-9]+)|r[0-9]",rs).group() #valor del dato
+                        d_inm_int = int(d_inm)
+
+
+                        val_rd = int(self.registro[rd],16)   #valor del registro rd(int)
+                        val_rd = val_rd + d_inm_int
+
+                        val_rd_ca2 = self.ca2(val_rd,32)
+                        val_rd_int = int(val_rd_ca2,2)
+                        val_rd_hex = hex(val_rd_int,16)
+                        val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group()
+                        sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean
+                        self.registro[rd] = sum_fin 
+
+                        #print("suma de un registro y un valor inmediato: "+self.registro[rd])
+                    else:
+                        print("valor exede el limite de los bits(8)")
+   
+            elif re.search(r"r[0-9]",rs) is not None:
+                val_rd = int(self.registro[rd],16)
+                val_rs = int(self.registro[rs],16)
+                
+                val_rd = val_rd + val_rs
+                
+                val_rd_ca2 = self.ca2(val_rd,32)
+                val_rd_int = int(val_rd_ca2,2)
+                val_rd_hex = hex(val_rd_int,16)
+                val_rd_clean = re.search(r"(?!0x|x)([\w]+)",val_rd_hex).group()
+                sum_fin = "0x" + (10 - len(val_rd_hex)) * "0" + val_rd_clean
+                self.registro[rd] = sum_fin 
+
+                #print("suma de dos registros: "+self.registro[rd])
+
+                #print("son dos registros")
+            else: 
+                self.registro["error"] = 4
+                self.registro["descrError"] = "Error de sintaxis"
                 self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
         #print("add")
