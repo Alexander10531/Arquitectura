@@ -463,7 +463,7 @@ class Codigo:
             self.registro["lineaError"] = self.obtener_llave(line,self.codigo)
 
     def ldrhRegistros(self,line):
-        print(line)
+        pass
 
     def ldrhValores(self,line):
         valor = {re.search(r"-?0x[A-Fa-f\d]+",line):16,re.search(r"-?0b[01]+",line):2}
