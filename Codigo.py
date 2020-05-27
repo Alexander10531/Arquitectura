@@ -343,7 +343,7 @@ class Codigo:
 
             reg = re.search(r"r[0-9]",rn)
             d_inm = re.search(r"[0-9]+",rn)
-            print(d_inm)
+            #print(d_inm)
             if reg is not None:
                 val_rd = int(self.registro[rd],16)
                 val_rs = int(self.registro[rs],16)
