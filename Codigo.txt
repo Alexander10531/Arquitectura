@@ -1,5 +1,0 @@
-.data
-    word1: .word 0x10203040
-.text 
-    ldr r0, =word1
-    ldrh r1, [r0]
