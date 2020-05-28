@@ -711,10 +711,10 @@ class Codigo:
 
                 if int(registros[0][1:]) >-1 and int(registros[0][1:]) < 8 and int(registros[1][1:]) >-1 and int(registros[1][1:]) < 8:
 
-                    valorRegisDestino= codigo.ca2_decimal(self.registro[registros[0]])  
-                    valorRegisFuente= codigo.ca2_decimal(self.registro[registros[1]])
-                    valorMultiplicacion= valorRegisFuente*valorRegisDestino
-                    valorMultiplicacion= int(codigo.ca2(valorMultiplicacion,32),2)
+                    valorRegisDestino = self.ca2_decimal(self.registro[registros[0]])  
+                    valorRegisFuente = self.ca2_decimal(self.registro[registros[1]])
+                    valorMultiplicacion = valorRegisFuente*valorRegisDestino
+                    valorMultiplicacion = int(self.ca2(valorMultiplicacion,32),2)
 
                     self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
 
@@ -729,19 +729,19 @@ class Codigo:
 
                     if registros[0] == registros[1]:
                     
-                        valorRegisDestino= codigo.ca2_decimal(self.registro[registros[1]])  
-                        valorRegisFuente= codigo.ca2_decimal(self.registro[registros[2]])
-                        valorMultiplicacion= valorRegisFuente*valorRegisDestino
-                        valorMultiplicacion= int(codigo.ca2(valorMultiplicacion,32),2)
+                        valorRegisDestino = self.ca2_decimal(self.registro[registros[1]])  
+                        valorRegisFuente = self.ca2_decimal(self.registro[registros[2]])
+                        valorMultiplicacion = valorRegisFuente*valorRegisDestino
+                        valorMultiplicacion = int(codigo.ca2(valorMultiplicacion,32),2)
 
                         self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
 
                     elif registros[0] == registros[2]:
 
-                        valorRegisDestino= codigo.ca2_decimal(self.registro[registros[1]])  
-                        valorRegisFuente= codigo.ca2_decimal(self.registro[registros[2]])
+                        valorRegisDestino= self.ca2_decimal(self.registro[registros[1]])  
+                        valorRegisFuente= self.ca2_decimal(self.registro[registros[2]])
                         valorMultiplicacion= valorRegisFuente*valorRegisDestino
-                        valorMultiplicacion= int(codigo.ca2(valorMultiplicacion,32),2)
+                        valorMultiplicacion= int(self.ca2(valorMultiplicacion,32),2)
 
                         self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
 
@@ -960,7 +960,7 @@ class Codigo:
                     break
                 lineaData+=1
 
-    def obtener_llave(self,linea,diccionario):
+    def obtener_llave(self,linea,diccionario):                                  
         
         #Obtiene los valores y las llaves de un diccionario
         valores = list(diccionario.values())
@@ -977,8 +977,4 @@ class Codigo:
             self.registro["descrError"] = "La etiqueta ya se incializo"
             self.registro["lineaError"] = self.obtener_llave(linea,self.codigo)
 
-codigo = Codigo("Codigo.txt")
-codigo.exec_data(codigo.registro["lineaData"])
-codigo.exec_text(codigo.registro["lineaText"])
-print(codigo.registro)
-print(codigo.ram)
+
