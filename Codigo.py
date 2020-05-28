@@ -732,7 +732,7 @@ class Codigo:
                         valorRegisDestino = self.ca2_decimal(self.registro[registros[1]])  
                         valorRegisFuente = self.ca2_decimal(self.registro[registros[2]])
                         valorMultiplicacion = valorRegisFuente*valorRegisDestino
-                        valorMultiplicacion = int(codigo.ca2(valorMultiplicacion,32),2)
+                        valorMultiplicacion = int(self.ca2(valorMultiplicacion,32),2)
 
                         self.registro[registros[0]]= '0x{0:0{1}X}'.format(valorMultiplicacion,8)
 
